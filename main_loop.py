@@ -6,7 +6,7 @@ Fill the three TODO blocks with the team's code. Until they exist, the loop runs
 placeholders so the pipeline can be exercised end to end on day 1.
 """
 import numpy as np, cv2
-from tb3sim import TB3Sim, wrap
+from p4_simulation.tb3sim import TB3Sim, wrap
 from config import DT, SLIP_STD, MARKER_SIZE, WAYPOINTS, V, INIT_OFFSET, P0, Qd, Rn
 
 sim = TB3Sim(dt=DT, slip_std=SLIP_STD)   # dt matches the Week 7/8 tutorials

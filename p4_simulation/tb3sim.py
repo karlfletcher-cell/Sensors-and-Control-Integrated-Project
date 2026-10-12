@@ -1,6 +1,11 @@
 """
 tb3sim.py — thin wrapper around the MuJoCo TurtleBot3 scene.
 
+Owner: P4.
+Inputs: tb3_scene.xml (next to this file), (v, w) commands via step().
+Outputs: odometry, LiDAR, camera images, camera K / T_base_cam, marker map position,
+and ground truth (true_pose / true_range_bearing: EVALUATION ONLY).
+
 Everyone else codes against THIS interface, not against MuJoCo directly:
 
     sim = TB3Sim()

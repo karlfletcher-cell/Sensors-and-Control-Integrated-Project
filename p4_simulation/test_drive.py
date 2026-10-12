@@ -1,15 +1,20 @@
 """
-Day-1 smoke test: drive a square open-loop and compare
+test_drive.py — day-1 smoke test of the simulator (owner: P4).
+
+Drive a square open-loop and compare
   - ground truth (from the simulator, evaluation only)
   - dead-reckoned odometry (what the EKF predict step will use)
   - one LiDAR scan and one camera frame with the ArUco detection
-Run:  python test_drive.py        (add MUJOCO_GL=egl or =osmesa on a headless machine)
+Inputs: none (uses TB3Sim directly). Outputs: printed drift/ArUco ids, test_drive.png in
+the current directory.
+Run from the repo root:  python -m p4_simulation.test_drive
+(add MUJOCO_GL=egl or =osmesa on a headless machine)
 """
 import numpy as np, matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import cv2
-from tb3sim import TB3Sim, wrap
+from p4_simulation.tb3sim import TB3Sim, wrap
 
 sim = TB3Sim(dt=0.05)
 mk = sim.marker_xy()
@@ -21,6 +26,7 @@ for _ in range(4):
     cmds += [(0.2, 0.0)] * 100          # 0.2 m/s for 5 s  = 1 m
     cmds += [(0.0, np.pi/4)] * 40       # 45 deg/s for 2 s = 90 deg
 
+# EVALUATION ONLY: ground truth is read in this smoke test to measure odometry drift
 truth, odom = [sim.true_pose()], [sim.true_pose()]   # odom starts from the true pose
 x = odom[0].copy()
 for v, w in cmds:
@@ -30,13 +36,13 @@ for v, w in cmds:
     x = np.array([x[0] + ds * np.cos(x[2] + dth / 2),
                   x[1] + ds * np.sin(x[2] + dth / 2),
                   wrap(x[2] + dth)])
-    truth.append(sim.true_pose()); odom.append(x.copy())
+    truth.append(sim.true_pose()); odom.append(x.copy())   # EVALUATION ONLY (ground truth)
 truth, odom = np.array(truth), np.array(odom)
 print("final true pose      ", np.round(truth[-1], 3))
 print("final odometry pose  ", np.round(odom[-1], 3))
 print("drift after square   %.3f m" % np.linalg.norm(truth[-1, :2] - odom[-1, :2]))
 
-# LiDAR scan at the final pose
+# LiDAR scan at the final pose (projected into the world with the TRUE pose: EVALUATION ONLY)
 scan, ang = sim.lidar(), sim.lidar_angles()
 hit = scan > 0
 pts = np.column_stack([scan[hit] * np.cos(ang[hit] + truth[-1, 2]) + truth[-1, 0],

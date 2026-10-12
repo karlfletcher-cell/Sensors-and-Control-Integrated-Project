@@ -1,7 +1,11 @@
 """
-Generates assets/aruco_0.png and tb3_scene.xml.
-Run once:  python make_scene.py
-Edit the constants at the top, re-run, and the scene regenerates.
+make_scene.py — generates p4_simulation/assets/aruco_0.png and p4_simulation/tb3_scene.xml.
+
+Owner: P4.
+Inputs: shared values from config.py + scene-only constants below.
+Outputs: the MJCF scene and the ArUco texture, written next to this file.
+Run once from the repo root:  python -m p4_simulation.make_scene
+Edit the constants (here or in config.py), re-run, and the scene regenerates.
 """
 import os, numpy as np, cv2
 from config import (WHEEL_R, WHEEL_SEP, N_RAYS, CAM_W, CAM_H,   # shared values live in config.py
