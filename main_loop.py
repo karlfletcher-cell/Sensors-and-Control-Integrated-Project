@@ -5,29 +5,18 @@ with the numpy plant replaced by MuJoCo and the synthetic measurement replaced b
 Fill the three TODO blocks with the team's code. Until they exist, the loop runs with
 placeholders so the pipeline can be exercised end to end on day 1.
 """
-import numpy as np, cv2
+import numpy as np
 from p4_simulation.tb3sim import TB3Sim, wrap
-from config import DT, SLIP_STD, MARKER_SIZE, WAYPOINTS, V, INIT_OFFSET, P0, Qd, Rn
+from p2_sensing.sensing import measure
+from config import DT, SLIP_STD, WAYPOINTS, V, INIT_OFFSET, P0, Qd, Rn
 
 sim = TB3Sim(dt=DT, slip_std=SLIP_STD)   # dt matches the Week 7/8 tutorials
 MARKER = sim.marker_xy()                 # known map feature (allowed: the dock is on the map)
 K_cam = sim.camera_intrinsics()
 T_bc  = sim.T_base_cam()
-detector = cv2.aruco.ArucoDetector(cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50))
 
 # ---------------------------------------------------------------- P2: sensing
-def measure(img):
-    """Return (range, bearing) of the marker in the BASE frame, or None if not visible."""
-    corners, ids, _ = detector.detectMarkers(cv2.cvtColor(img, cv2.COLOR_RGB2GRAY))
-    if ids is None:
-        return None
-    s = MARKER_SIZE / 2
-    obj = np.array([[-s, s, 0], [s, s, 0], [s, -s, 0], [-s, -s, 0]], np.float32)
-    _, rvec, tvec = cv2.solvePnP(obj, corners[0][0], K_cam, None)
-    p_cam = np.append(tvec.ravel(), 1.0)
-    p_base = T_bc @ p_cam                               # camera frame -> base frame
-    return np.array([np.hypot(p_base[0], p_base[1]), np.arctan2(p_base[1], p_base[0])])
-    # TODO (P2): proper calibration of K instead of trusting the sim, noise characterisation -> R
+# measure(img, K, T_bc): p2_sensing/sensing.py
 
 # ---------------------------------------------------------------- P3: estimator
 # TODO (P3): paste f_uni, F_uni, h_rb, H_rb, ekf_predict, ekf_update from Week 8 Part 0
@@ -70,7 +59,7 @@ for k in range(800):
     # TODO (P3): xh, P = ekf_predict(xh, P, (v, w), f_uni, F_uni, Qd)
 
     # 3. camera -> measurement -> EKF update
-    z = measure(sim.camera())
+    z = measure(sim.camera(), K_cam, T_bc)
     if z is not None:
         pass
         # TODO (P3): xh, P, _, _ = ekf_update(xh, P, z, lambda s: h_rb(s, MARKER), lambda s: H_rb(s, MARKER), Rn,
