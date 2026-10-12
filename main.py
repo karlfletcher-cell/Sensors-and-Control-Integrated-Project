@@ -1,5 +1,5 @@
 """
-main_loop.py — the integration skeleton (P4). Structure = Week 8 Part C run_landmark_lqg,
+main.py — the integration skeleton (P4). Structure = Week 8 Part C run_landmark_lqg,
 with the numpy plant replaced by MuJoCo and the synthetic measurement replaced by ArUco.
 
 Fill the three TODO blocks with the team's code. Until they exist, the loop runs with

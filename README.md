@@ -4,25 +4,31 @@ Minimal MuJoCo scene + Python wrapper for the Week 11 "working simulation" gate.
 
 ## Setup (fresh environment)
 ```
-pip install mujoco opencv-contrib-python numpy matplotlib
-python make_scene.py        # writes tb3_scene.xml + assets/aruco_0.png
-python test_drive.py        # smoke test -> test_drive.png
-python view_scene.py        # interactive 3D viewer (needs a display)
-python main_loop.py         # end-to-end pipeline skeleton
+pip install -r requirements.txt
+python -m p4_simulation.make_scene    # writes p4_simulation/tb3_scene.xml + p4_simulation/assets/aruco_0.png
+python -m p4_simulation.test_drive    # smoke test -> test_drive.png
+python -m p4_simulation.view_scene    # interactive 3D viewer (needs a display)
+python main.py                        # end-to-end pipeline skeleton
 ```
 Headless machine / no GPU: prefix with `MUJOCO_GL=egl` (NVIDIA) or `MUJOCO_GL=osmesa`.
 
 ## Files
 | file | what |
 |---|---|
-| `make_scene.py` | all scene constants (robot dims, obstacles, dock, marker size, LiDAR rays). Edit, re-run. |
-| `tb3_scene.xml` | generated MJCF. Don't hand-edit. |
-| `tb3sim.py` | `TB3Sim` — the only interface the rest of the team uses. |
-| `test_drive.py` | open-loop square + LiDAR scan + camera/ArUco check. |
-| `main_loop.py` | integration loop: control → step → odometry → camera → update. TODO blocks for P1/P2/P3. |
+| `main.py` | integration loop: control → step → odometry → camera → update. TODO blocks for P1/P2/P3. |
+| `config.py` | shared constants. |
+| `p1_control/controller.py` | `controller()` and `dock_command()` (P1). |
+| `p2_sensing/sensing.py` | ArUco detection and `measure()` (P2). |
+| `p3_estimation/` | empty placeholder for the EKF (P3). |
+| `p4_simulation/make_scene.py` | all scene constants (robot dims, obstacles, dock, marker size, LiDAR rays). Edit, re-run. |
+| `p4_simulation/tb3_scene.xml` | generated MJCF. Don't hand-edit. |
+| `p4_simulation/tb3sim.py` | `TB3Sim` — the only interface the rest of the team uses. |
+| `p4_simulation/test_drive.py` | open-loop square + LiDAR scan + camera/ArUco check. |
+| `p4_simulation/view_scene.py` | interactive viewer. |
 
-## Interface (`tb3sim.py`)
+## Interface (`p4_simulation/tb3sim.py`)
 ```
+from p4_simulation.tb3sim import TB3Sim
 sim = TB3Sim(dt=0.1, slip_std=0.02)
 sim.reset(pose=(x, y, yaw))     # optional
 sim.step(v, w)                  # body velocity command for one period dt
@@ -38,7 +44,7 @@ x_true = sim.true_pose()        # (x, y, yaw) GROUND TRUTH — evaluation/plots 
 ## Frames
 world → base (x fwd, y left, z up, origin on floor between wheels) → camera
 (MuJoCo convention: looks along −z, y up; `T_base_cam()` converts to base).
-ArUco `solvePnP` gives the marker in the camera frame; `main_loop.measure()` shows the
+ArUco `solvePnP` gives the marker in the camera frame; `p2_sensing.sensing.measure()` shows the
 conversion to (range, bearing) in the base frame. Note the camera sits 0.10 m ahead of
 the base origin — range from the camera ≠ range from the base.
 
@@ -53,7 +59,7 @@ the base origin — range from the camera ≠ range from the base.
 - Robot dims: Waffle (wheel r 0.033 m, separation 0.287 m).
 
 ## Who plugs in what
-- **P1**: `controller()` in `main_loop.py` — LQR on the error model, from Week 8 B.1 / Assessment 3.
-- **P2**: `measure()` — calibration of K, noise characterisation → `Rn`, marker-lost handling.
-- **P3**: the two `ekf_*` TODOs — paste Week 8 Part 0 functions, tune `Qd`, `Rn`, log `P`.
-- **P4**: scene, this loop, batch trials, plots of `xh` ± 2σ vs `true` from `run_log.npz`.
+- **P1**: `controller()` in `p1_control/controller.py` — LQR on the error model, from Week 8 B.1 / Assessment 3.
+- **P2**: `measure()` in `p2_sensing/sensing.py` — calibration of K, noise characterisation → `Rn`, marker-lost handling.
+- **P3**: the two `ekf_*` TODOs in `main.py` (code goes in `p3_estimation/`) — paste Week 8 Part 0 functions, tune `Qd`, `Rn`, log `P`.
+- **P4**: scene (`p4_simulation/`), this loop (`main.py`), batch trials, plots of `xh` ± 2σ vs `true` from `run_log.npz`.
