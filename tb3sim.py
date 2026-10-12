@@ -20,6 +20,7 @@ camera_intrinsics() and T_base_cam()).
 import os
 import numpy as np
 import mujoco
+import config
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
@@ -29,11 +30,11 @@ def wrap(a):
 
 
 class TB3Sim:
-    # keep these in sync with make_scene.py
-    WHEEL_R = 0.033
-    WHEEL_SEP = 0.287
-    N_RAYS = 72
-    CAM_W, CAM_H = 640, 480
+    # from config.py (make_scene.py builds the XML from the same values)
+    WHEEL_R = config.WHEEL_R
+    WHEEL_SEP = config.WHEEL_SEP
+    N_RAYS = config.N_RAYS
+    CAM_W, CAM_H = config.CAM_W, config.CAM_H
 
     def __init__(self, xml=os.path.join(HERE, "tb3_scene.xml"), dt=0.05, render=True,
                  slip_std=0.0, seed=0):
