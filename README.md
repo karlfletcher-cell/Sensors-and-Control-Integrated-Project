@@ -1,59 +1,51 @@
-# tb3sim — TurtleBot3 Track A simulation (41014 Assessment 4)
+# tb3sim — TurtleBot3 Docking Simulation (41014 Assessment 4, Track A)
 
-Minimal MuJoCo scene + Python wrapper for the Week 11 "working simulation" gate.
+Simulated TurtleBot3 (MuJoCo) that uses wheel odometry + an ArUco marker on the dock
+to estimate its pose (EKF) and drive to the dock.
 
-## Setup (fresh environment)
+## Quick start
+
 ```
-pip install mujoco opencv-contrib-python numpy matplotlib
-python make_scene.py        # writes tb3_scene.xml + assets/aruco_0.png
-python test_drive.py        # smoke test -> test_drive.png
-python view_scene.py        # interactive 3D viewer (needs a display)
-python main_loop.py         # end-to-end pipeline skeleton
+pip install -r requirements.txt
+python -m p4_simulation.make_scene       # build the scene (run once, or after editing make_scene.py)
+python -m p4_simulation.test_drive       # check the sim works -> test_drive.png
+python main.py                           # run the full pipeline
 ```
-Headless machine / no GPU: prefix with `MUJOCO_GL=egl` (NVIDIA) or `MUJOCO_GL=osmesa`.
 
-## Files
-| file | what |
-|---|---|
-| `make_scene.py` | all scene constants (robot dims, obstacles, dock, marker size, LiDAR rays). Edit, re-run. |
-| `tb3_scene.xml` | generated MJCF. Don't hand-edit. |
-| `tb3sim.py` | `TB3Sim` — the only interface the rest of the team uses. |
-| `test_drive.py` | open-loop square + LiDAR scan + camera/ArUco check. |
-| `main_loop.py` | integration loop: control → step → odometry → camera → update. TODO blocks for P1/P2/P3. |
+No screen/GPU? Prefix commands with `MUJOCO_GL=egl` (NVIDIA) or `MUJOCO_GL=osmesa` (CPU).
 
-## Interface (`tb3sim.py`)
-```
+## Who does what
+
+| Person | Job | Code |
+|---|---|---|
+| **P1** | Controller (LQR) | `controller()` in `p1_control/controller.py` |
+| **P2** | Sensing — camera calibration, noise `Rn`, marker lost | `measure()` in `p2_sensing/sensing.py` |
+| **P3** | EKF — tune `Qd`, `Rn`, log `P` | `p3_estimation/`, called from the `ekf_*` TODOs in `main.py` |
+| **P4** | Scene, main loop, trials, plots | `p4_simulation/`, `main.py` |
+
+## Using the simulator
+
+```python
+from p4_simulation.tb3sim import TB3Sim
+
 sim = TB3Sim(dt=0.1, slip_std=0.02)
-sim.reset(pose=(x, y, yaw))     # optional
-sim.step(v, w)                  # body velocity command for one period dt
-dl, dr = sim.odometry()         # wheel travel [m] since last call   -> EKF predict
-scan   = sim.lidar()            # (72,) ranges, angle i*5deg in base frame, -1 = no hit
-img    = sim.camera()           # 640x480 RGB from the forward camera -> ArUco
-K      = sim.camera_intrinsics()   # pinhole K (sim's own fovy; P2 should still calibrate)
-T_bc   = sim.T_base_cam()       # camera pose in base frame (4x4)
-mk     = sim.marker_xy()        # marker world position (known map feature)
-x_true = sim.true_pose()        # (x, y, yaw) GROUND TRUTH — evaluation/plots ONLY
+sim.reset(pose=(x, y, yaw))           # optional start pose
+sim.step(v, w)                        # speed [m/s], turn rate [rad/s]
+dl, dr = sim.odometry()               # wheel travel [m] since last call -> EKF predict
+img    = sim.camera()                 # 640x480 RGB -> ArUco -> EKF update
+K      = sim.camera_intrinsics()      # camera matrix
+T_bc   = sim.T_base_cam()             # camera pose on the robot (4x4)
+mk     = sim.marker_xy()              # marker world position
+x_true = sim.true_pose()              # GROUND TRUTH — plots/evaluation only
 ```
 
-## Frames
-world → base (x fwd, y left, z up, origin on floor between wheels) → camera
-(MuJoCo convention: looks along −z, y up; `T_base_cam()` converts to base).
-ArUco `solvePnP` gives the marker in the camera frame; `main_loop.measure()` shows the
-conversion to (range, bearing) in the base frame. Note the camera sits 0.10 m ahead of
-the base origin — range from the camera ≠ range from the base.
+**Never use `true_pose()` in the controller or EKF** — it fails the assessment.
 
-## Modelling decisions (say these on the project page)
-- Base is a planar joint (x, y, yaw) driven by velocity servos from the unicycle model —
-  the same `f_uni` as Week 7/8. Wheel/floor contact is **not** simulated; wheels exist
-  for the encoders. Process noise = per-wheel multiplicative slip (`slip_std`).
-- Collisions with walls/obstacles ARE simulated (robot stops against them).
-- LiDAR = 72 `rangefinder` sensors, 3.5 m cutoff (LDS-01: 360 rays, same range).
-- Camera 640×480, fovy 48° (≈ Pi camera). No lens distortion.
-- ArUco DICT_4X4_50 id 0, 0.20 m, on the dock face at (2.6, 1.5) facing −x.
-- Robot dims: Waffle (wheel r 0.033 m, separation 0.287 m).
+## Things to know
 
-## Who plugs in what
-- **P1**: `controller()` in `main_loop.py` — LQR on the error model, from Week 8 B.1 / Assessment 3.
-- **P2**: `measure()` — calibration of K, noise characterisation → `Rn`, marker-lost handling.
-- **P3**: the two `ekf_*` TODOs — paste Week 8 Part 0 functions, tune `Qd`, `Rn`, log `P`.
-- **P4**: scene, this loop, batch trials, plots of `xh` ± 2σ vs `true` from `run_log.npz`.
+- Base frame: x forward, y left, origin between the wheels. The camera is **0.10 m ahead**
+  of this, so camera range ≠ robot range (`measure()` handles the conversion).
+- Motion uses the unicycle model (`f_uni`, Weeks 7/8); process noise is per-wheel slip.
+- Marker: ArUco `DICT_4X4_50`, id 0, 0.20 m, at (2.6, 1.5) facing −x.
+- Robot: Waffle — wheel radius 0.033 m, separation 0.287 m.
+- Don't hand-edit `tb3_scene.xml`; change `make_scene.py` and re-run it.

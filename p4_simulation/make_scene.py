@@ -1,17 +1,22 @@
 """
-Generates assets/aruco_0.png and tb3_scene.xml.
-Run once:  python make_scene.py
-Edit the constants at the top, re-run, and the scene regenerates.
+make_scene.py — generates p4_simulation/assets/aruco_0.png and p4_simulation/tb3_scene.xml.
+
+Owner: P4.
+Inputs: shared values from config.py + scene-only constants below.
+Outputs: the MJCF scene and the ArUco texture, written next to this file.
+Run once from the repo root:  python -m p4_simulation.make_scene
+Edit the constants (here or in config.py), re-run, and the scene regenerates.
 """
 import os, numpy as np, cv2
+from config import (WHEEL_R, WHEEL_SEP, N_RAYS, CAM_W, CAM_H,   # shared values live in config.py
+                    DOCK_XY, MARKER_SIZE, MARKER_ID, ROBOT_START)
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ASSETS = os.path.join(HERE, "assets")
 os.makedirs(ASSETS, exist_ok=True)
 
 # ---- TurtleBot3 Waffle geometry (ROBOTIS spec) ----------------------------
-WHEEL_R    = 0.033      # wheel radius [m]
-WHEEL_SEP  = 0.287      # distance between wheel centres [m]  (Burger: 0.160)
+# WHEEL_R, WHEEL_SEP: config.py
 BODY_HX, BODY_HY, BODY_HZ = 0.14, 0.14, 0.035   # chassis half-sizes
 BODY_Z     = 0.075      # chassis centre height
 LIDAR_Z    = 0.17       # LDS-01 scan plane height
@@ -19,7 +24,7 @@ CAM_POS    = (0.10, 0.0, 0.12)   # camera in robot frame (x fwd, y left, z up)
 CAM_FOVY   = 48         # vertical FOV [deg]; Pi cam is ~62 deg horizontal
 
 # ---- LiDAR --------------------------------------------------------------
-N_RAYS     = 72         # LDS-01 is 360 @ 1 deg; 72 keeps the sim fast
+# N_RAYS: config.py
 LIDAR_MAX  = 3.5        # LDS-01 max range [m]
 
 # ---- World --------------------------------------------------------------
@@ -30,12 +35,10 @@ OBSTACLES  = [          # (x, y, half_x, half_y)
     ( 1.2, -0.9, 0.40, 0.20),
     (-1.0, -1.2, 0.20, 0.40),
 ]
-DOCK_XY    = (2.6, 1.5)      # charging station position (marker on its face)
+# DOCK_XY: config.py
 DOCK_YAW   = np.pi           # marker normal points this way (-x: faces into room)
-MARKER_SIZE= 0.20            # ArUco side length [m]  <-- P2 needs this number
+# MARKER_SIZE, MARKER_ID, ROBOT_START: config.py
 MARKER_Z   = 0.12            # marker centre height (roughly camera height)
-MARKER_ID  = 0
-ROBOT_START= (-2.0, -1.5, 0.0)   # x, y, yaw
 
 # ---- ArUco texture --------------------------------------------------------
 aruco = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
@@ -64,7 +67,7 @@ R = ROOM_HALF
 xml = f"""<mujoco model="tb3_waffle_room">
   <option timestep="0.002" integrator="implicitfast" cone="elliptic" impratio="10"/>
   <compiler angle="radian"/>
-  <visual><global offwidth="640" offheight="480"/></visual>
+  <visual><global offwidth="{CAM_W}" offheight="{CAM_H}"/></visual>
 
   <asset>
     <texture name="floor_tex" type="2d" builtin="checker" rgb1="0.8 0.8 0.8" rgb2="0.6 0.6 0.6" width="300" height="300"/>
