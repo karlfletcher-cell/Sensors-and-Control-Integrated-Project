@@ -7,8 +7,9 @@ placeholders so the pipeline can be exercised end to end on day 1.
 """
 import numpy as np
 from p4_simulation.tb3sim import TB3Sim, wrap
+from p1_control.controller import controller, dock_command
 from p2_sensing.sensing import measure
-from config import DT, SLIP_STD, WAYPOINTS, V, INIT_OFFSET, P0, Qd, Rn
+from config import DT, SLIP_STD, WAYPOINTS, INIT_OFFSET, P0, Qd, Rn
 
 sim = TB3Sim(dt=DT, slip_std=SLIP_STD)   # dt matches the Week 7/8 tutorials
 MARKER = sim.marker_xy()                 # known map feature (allowed: the dock is on the map)
@@ -23,14 +24,8 @@ T_bc  = sim.T_base_cam()
 # Qd, Rn: config.py
 
 # ---------------------------------------------------------------- P1: controller
-# TODO (P1): LQR gain on the error model (Week 8 B.1 / Assessment 3), waypoint reference
+# controller(xh, wp), dock_command(xh, marker): p1_control/controller.py
 # WAYPOINTS, V: config.py
-
-def controller(xh, wp):
-    """Placeholder: point-and-drive. P1 replaces this with LQR on the estimate."""
-    dx, dy = wp[0] - xh[0], wp[1] - xh[1]
-    eth = wrap(np.arctan2(dy, dx) - xh[2])
-    return V, np.clip(2.0 * eth, -1.0, 1.0)
 
 # ---------------------------------------------------------------- the loop
 sim.reset()
@@ -45,9 +40,7 @@ for k in range(800):
     # 1. control from the ESTIMATE
     at_last = wp_i == len(WAYPOINTS) - 1 and np.hypot(*(np.array(WAYPOINTS[wp_i]) - xh[:2])) < 0.15
     if at_last:                                  # dock: stop and face the marker, using the estimate
-        eth = wrap(np.arctan2(MARKER[1] - xh[1], MARKER[0] - xh[0]) - xh[2])
-        v, w = 0.0, np.clip(2.0 * eth, -1.0, 1.0)
-        docked = abs(eth) < 0.05
+        v, w, docked = dock_command(xh, MARKER)
     else:
         v, w = controller(xh, WAYPOINTS[wp_i])
     sim.step(v, w)
