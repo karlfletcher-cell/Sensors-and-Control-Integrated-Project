@@ -7,10 +7,10 @@ placeholders so the pipeline can be exercised end to end on day 1.
 """
 import numpy as np, cv2
 from tb3sim import TB3Sim, wrap
+from config import DT, SLIP_STD, MARKER_SIZE, WAYPOINTS, V, INIT_OFFSET, P0, Qd, Rn
 
-sim = TB3Sim(dt=0.1, slip_std=0.02)      # dt matches the Week 7/8 tutorials
+sim = TB3Sim(dt=DT, slip_std=SLIP_STD)   # dt matches the Week 7/8 tutorials
 MARKER = sim.marker_xy()                 # known map feature (allowed: the dock is on the map)
-MARKER_SIZE = 0.20                       # must match make_scene.py
 K_cam = sim.camera_intrinsics()
 T_bc  = sim.T_base_cam()
 detector = cv2.aruco.ArucoDetector(cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50))
@@ -31,13 +31,11 @@ def measure(img):
 
 # ---------------------------------------------------------------- P3: estimator
 # TODO (P3): paste f_uni, F_uni, h_rb, H_rb, ekf_predict, ekf_update from Week 8 Part 0
-Qd = np.diag([0.02**2, 0.02**2, np.deg2rad(1.5)**2])
-Rn = np.diag([0.10**2, np.deg2rad(3.0)**2])
+# Qd, Rn: config.py
 
 # ---------------------------------------------------------------- P1: controller
 # TODO (P1): LQR gain on the error model (Week 8 B.1 / Assessment 3), waypoint reference
-WAYPOINTS = [(-1.5, -2.2), (0.5, -2.2), (2.2, -1.5), (2.2, 0.0), (2.0, 1.5)]   # last one: in front of the dock
-V = 0.2
+# WAYPOINTS, V: config.py
 
 def controller(xh, wp):
     """Placeholder: point-and-drive. P1 replaces this with LQR on the estimate."""
@@ -48,8 +46,8 @@ def controller(xh, wp):
 # ---------------------------------------------------------------- the loop
 sim.reset()
 x_true0 = sim.true_pose()
-xh = x_true0 + np.array([0.3, -0.2, np.deg2rad(10)])    # deliberately wrong initial belief
-P  = np.diag([0.3**2, 0.3**2, np.deg2rad(15)**2])
+xh = x_true0 + INIT_OFFSET                # deliberately wrong initial belief
+P  = P0.copy()
 log = dict(true=[], xh=[], P=[], seen=[])
 wp_i = 0
 
