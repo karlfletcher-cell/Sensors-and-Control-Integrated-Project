@@ -1,75 +1,142 @@
-"""
-main.py — the integration skeleton (P4). Structure = Week 8 Part C run_landmark_lqg,
-with the numpy plant replaced by MuJoCo and the synthetic measurement replaced by ArUco.
-
-Fill the three TODO blocks with the team's code. Until they exist, the loop runs with
-placeholders so the pipeline can be exercised end to end on day 1.
-"""
+# =============================================================================
+# IMPORTS
+# =============================================================================
+import time
 import numpy as np
-from p4_simulation.tb3sim import TB3Sim, wrap
+import mujoco.viewer
+from p4_simulation.tb3sim import TB3Sim
 from p1_control.controller import controller, dock_command
 from p2_sensing.sensing import measure
-from config import DT, SLIP_STD, WAYPOINTS, INIT_OFFSET, P0, Qd, Rn
+from p3_estimation.Estimation import (odometry_to_input, motion_model, motion_jacobian,
+                                     predict_range_bearing, measurement_jacobian,
+                                     range_bearing_residual, ekf_predict, ekf_update)
+from config import DT, SLIP_STD, WHEEL_SEP, WAYPOINTS, ROBOT_START, INIT_OFFSET, P0, Qd, Rn
 
-sim = TB3Sim(dt=DT, slip_std=SLIP_STD)   # dt matches the Week 7/8 tutorials
-MARKER = sim.marker_xy()                 # known map feature (allowed: the dock is on the map)
-K_cam = sim.camera_intrinsics()
-T_bc  = sim.T_base_cam()
 
-# ---------------------------------------------------------------- P2: sensing
-# measure(img, K, T_bc): p2_sensing/sensing.py
+# =============================================================================
+# SETTINGS
+# =============================================================================
+MAX_STEPS = 800              # give up after this many control steps
+WAYPOINT_TOL = 0.15          # [m] a waypoint counts as reached when the estimate is this close
+LAST_WP = len(WAYPOINTS) - 1
 
-# ---------------------------------------------------------------- P3: estimator
-# TODO (P3): paste f_uni, F_uni, h_rb, H_rb, ekf_predict, ekf_update from Week 8 Part 0
-# Qd, Rn: config.py
 
-# ---------------------------------------------------------------- P1: controller
-# controller(xh, wp), dock_command(xh, marker): p1_control/controller.py
-# WAYPOINTS, V: config.py
+# =============================================================================
+# HELPERS
+# =============================================================================
+def distance_to(point, xh):
+    """Straight-line distance [m] from the estimated position to a 2D point."""
+    return np.hypot(*(np.array(point) - xh[:2]))
 
-# ---------------------------------------------------------------- the loop
+
+# =============================================================================
+# SIMULATOR SETUP
+# Create the sim and read the fixed values the other modules need.
+# =============================================================================
+sim = TB3Sim(dt=DT, slip_std=SLIP_STD)
+MARKER = sim.marker_xy()          # marker (landmark) position in the world
+K_cam = sim.camera_intrinsics()   # camera intrinsic matrix
+T_bc  = sim.T_base_cam()          # transform from robot base to camera
+
+
+# =============================================================================
+# INITIAL STATE
+# The estimate starts deliberately wrong so the EKF has something to correct.
+# =============================================================================
 sim.reset()
-x_true0 = sim.true_pose()
-xh = x_true0 + INIT_OFFSET                # deliberately wrong initial belief
-P  = P0.copy()
-log = dict(true=[], xh=[], P=[], seen=[])
-wp_i = 0
-
+xh = np.array(ROBOT_START) + INIT_OFFSET   # estimated pose [x, y, theta]: known start + deliberate error
+P  = P0.copy()                    # estimate covariance
+wp_i = 0                          # index of the waypoint we are driving to
 docked = False
-for k in range(800):
-    # 1. control from the ESTIMATE
-    at_last = wp_i == len(WAYPOINTS) - 1 and np.hypot(*(np.array(WAYPOINTS[wp_i]) - xh[:2])) < 0.15
-    if at_last:                                  # dock: stop and face the marker, using the estimate
+
+log = dict(true=[], xh=[], P=[], seen=[])
+viewer = mujoco.viewer.launch_passive(sim.model, sim.data)
+
+
+# =============================================================================
+# MAIN LOOP
+# =============================================================================
+for k in range(MAX_STEPS):
+
+    # -------------------------------------------------------------------------
+    # 1. CONTROL - choose (v, w) from the ESTIMATE, then step the sim
+    #    At the last waypoint, switch to docking: stop and face the marker.
+    # -------------------------------------------------------------------------
+    target = WAYPOINTS[wp_i]
+   
+    if wp_i == LAST_WP and distance_to(target, xh) < WAYPOINT_TOL:
         v, w, docked = dock_command(xh, MARKER)
     else:
-        v, w = controller(xh, WAYPOINTS[wp_i])
+                v, w = controller(xh, target)
     sim.step(v, w)
 
-    # 2. odometry -> EKF predict   (placeholder: dead reckoning, no covariance)
-    dl, dr = sim.odometry()
-    ds, dth = (dl + dr) / 2, (dr - dl) / sim.WHEEL_SEP
-    xh = np.array([xh[0] + ds * np.cos(xh[2] + dth / 2), xh[1] + ds * np.sin(xh[2] + dth / 2), wrap(xh[2] + dth)])
-    # TODO (P3): xh, P = ekf_predict(xh, P, (v, w), f_uni, F_uni, Qd)
+    # -------------------------------------------------------------------------
+    # 2. PREDICT - EKF predict, using wheel odometry as the input u = [v, w]
+    # -------------------------------------------------------------------------
+    dl, dr = sim.odometry()           # left/right wheel travel this step [m]
+    u = odometry_to_input(dl, dr, WHEEL_SEP)
+    xh, P = ekf_predict(xh, P, u, motion_model, motion_jacobian, Qd)
 
-    # 3. camera -> measurement -> EKF update
-    z = measure(sim.camera(), K_cam, T_bc)
-    if z is not None:
-        pass
-        # TODO (P3): xh, P, _, _ = ekf_update(xh, P, z, lambda s: h_rb(s, MARKER), lambda s: H_rb(s, MARKER), Rn,
-        #                                     residual=lambda y, yh: np.array([y[0]-yh[0], wrap(y[1]-yh[1])]))
+    # -------------------------------------------------------------------------
+    # 3. SENSE + UPDATE - camera -> range/bearing to marker -> EKF update
+    # -------------------------------------------------------------------------
+    z = measure(sim.camera(), K_cam, T_bc)   # [range, bearing], or None if marker not in view
+    marker_seen = z is not None
+    if marker_seen:
+        xh, P, _, _ = ekf_update(xh, P, z,
+                                 lambda s: predict_range_bearing(s, MARKER),
+                                 lambda s: measurement_jacobian(s, MARKER),
+                                 Rn, residual=range_bearing_residual)
 
-    # 4. waypoint switching
-    if np.hypot(*(np.array(WAYPOINTS[wp_i]) - xh[:2])) < 0.15 and wp_i < len(WAYPOINTS) - 1:
+    # -------------------------------------------------------------------------
+    # 4. WAYPOINT SWITCHING - aim for the next waypoint once this one is reached
+    # -------------------------------------------------------------------------
+    if wp_i < LAST_WP and distance_to(WAYPOINTS[wp_i], xh) < WAYPOINT_TOL:
         wp_i += 1
 
-    # 5. logging — ground truth is read HERE and nowhere else
-    log["true"].append(sim.true_pose()); log["xh"].append(xh.copy()); log["P"].append(P.copy()); log["seen"].append(z is not None)
-    if docked:
-        print(f"docked at step {k}: marker measured at range/bearing {np.round(z,3) if z is not None else 'not in view'}")
+    # -------------------------------------------------------------------------
+    # 5. LOGGING - ground truth is recorded here for evaluation only
+    # -------------------------------------------------------------------------
+    log["true"].append(sim.true_pose())   # EVALUATION ONLY
+    log["xh"].append(xh.copy())
+    log["P"].append(P.copy())
+    log["seen"].append(marker_seen)
+
+    # -------------------------------------------------------------------------
+    # 6. VIEWER - redraw the 3D window at real time; stop if it is closed
+    # -------------------------------------------------------------------------
+    viewer.sync()
+    time.sleep(DT)
+    if not viewer.is_running():
         break
 
-T, XH = np.array(log["true"]), np.array(log["xh"])
-err = np.linalg.norm(T[:, :2] - XH[:, :2], axis=1)
-print(f"final true pose {np.round(T[-1],3)}  estimate {np.round(XH[-1],3)}")
-print(f"position error: mean {err.mean():.3f} m, final {err[-1]:.3f} m; marker seen in {np.mean(log['seen'])*100:.0f}% of steps")
-np.savez("run_log.npz", **{k: np.array(v) for k, v in log.items()})
+    # -------------------------------------------------------------------------
+    # 7. STOP CONDITION - finish once docked at the marker
+    # -------------------------------------------------------------------------
+    if docked:
+        z_text = np.round(z, 3) if marker_seen else "not in view"
+        print(f"docked at step {k}: marker measured at range/bearing {z_text}")
+        break
+
+
+# =============================================================================
+# RESULTS - compare the estimate with ground truth and save the log
+# =============================================================================
+true_poses = np.array(log["true"])
+est_poses = np.array(log["xh"])
+pos_err = np.linalg.norm(true_poses[:, :2] - est_poses[:, :2], axis=1)   # [m] each step
+seen_pct = np.mean(log["seen"]) * 100
+
+print(f"final true pose {np.round(true_poses[-1], 3)}  estimate {np.round(est_poses[-1], 3)}")
+print(f"position error: mean {pos_err.mean():.3f} m, final {pos_err[-1]:.3f} m; "
+      f"marker seen in {seen_pct:.0f}% of steps")
+np.savez("run_log.npz", **{name: np.array(values) for name, values in log.items()})
+
+
+# =============================================================================
+# KEEP VIEWER OPEN - wait until the user closes the window
+# =============================================================================
+while viewer.is_running():
+    viewer.sync()
+    time.sleep(0.05)
+viewer.close()
