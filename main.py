@@ -5,20 +5,18 @@ import time
 import numpy as np
 import mujoco.viewer
 from p4_simulation.tb3sim import TB3Sim
-from p1_control.controller import controller, dock_command
+from p1_control.controller import avoid_controller, dock_command
 from p2_sensing.sensing import measure
 from p3_estimation.Estimation import (odometry_to_input, motion_model, motion_jacobian,
                                      predict_range_bearing, measurement_jacobian,
                                      range_bearing_residual, ekf_predict, ekf_update)
-from config import DT, SLIP_STD, WHEEL_SEP, WAYPOINTS, ROBOT_START, INIT_OFFSET, P0, Qd, Rn
+from config import DT, SLIP_STD, WHEEL_SEP, GOAL, GOAL_TOL, ROBOT_START, INIT_OFFSET, P0, Qd, Rn
 
 
 # =============================================================================
 # SETTINGS
 # =============================================================================
 MAX_STEPS = 800              # give up after this many control steps
-WAYPOINT_TOL = 0.15          # [m] a waypoint counts as reached when the estimate is this close
-LAST_WP = len(WAYPOINTS) - 1
 
 
 # =============================================================================
@@ -46,7 +44,6 @@ T_bc  = sim.T_base_cam()          # transform from robot base to camera
 sim.reset()
 xh = np.array(ROBOT_START) + INIT_OFFSET   # estimated pose [x, y, theta]: known start + deliberate error
 P  = P0.copy()                    # estimate covariance
-wp_i = 0                          # index of the waypoint we are driving to
 docked = False
 
 log = dict(true=[], xh=[], P=[], seen=[])
@@ -59,15 +56,14 @@ viewer = mujoco.viewer.launch_passive(sim.model, sim.data)
 for k in range(MAX_STEPS):
 
     # -------------------------------------------------------------------------
-    # 1. CONTROL - choose (v, w) from the ESTIMATE, then step the sim
-    #    At the last waypoint, switch to docking: stop and face the marker.
+    # 1. CONTROL - choose (v, w) from the ESTIMATE and the LiDAR, then step the sim
+    #    The robot picks its own path to the goal, steering around obstacles.
+    #    At the goal, switch to docking: stop and face the marker.
     # -------------------------------------------------------------------------
-    target = WAYPOINTS[wp_i]
-   
-    if wp_i == LAST_WP and distance_to(target, xh) < WAYPOINT_TOL:
+    if distance_to(GOAL, xh) < GOAL_TOL:
         v, w, docked = dock_command(xh, MARKER)
     else:
-                v, w = controller(xh, target)
+        v, w = avoid_controller(xh, GOAL, sim.lidar(), sim.lidar_angles())
     sim.step(v, w)
 
     # -------------------------------------------------------------------------
@@ -89,13 +85,7 @@ for k in range(MAX_STEPS):
                                  Rn, residual=range_bearing_residual)
 
     # -------------------------------------------------------------------------
-    # 4. WAYPOINT SWITCHING - aim for the next waypoint once this one is reached
-    # -------------------------------------------------------------------------
-    if wp_i < LAST_WP and distance_to(WAYPOINTS[wp_i], xh) < WAYPOINT_TOL:
-        wp_i += 1
-
-    # -------------------------------------------------------------------------
-    # 5. LOGGING - ground truth is recorded here for evaluation only
+    # 4. LOGGING - ground truth is recorded here for evaluation only
     # -------------------------------------------------------------------------
     log["true"].append(sim.true_pose())   # EVALUATION ONLY
     log["xh"].append(xh.copy())
@@ -103,7 +93,7 @@ for k in range(MAX_STEPS):
     log["seen"].append(marker_seen)
 
     # -------------------------------------------------------------------------
-    # 6. VIEWER - redraw the 3D window at real time; stop if it is closed
+    # 5. VIEWER - redraw the 3D window at real time; stop if it is closed
     # -------------------------------------------------------------------------
     viewer.sync()
     time.sleep(DT)
@@ -111,7 +101,7 @@ for k in range(MAX_STEPS):
         break
 
     # -------------------------------------------------------------------------
-    # 7. STOP CONDITION - finish once docked at the marker
+    # 6. STOP CONDITION - finish once docked at the marker
     # -------------------------------------------------------------------------
     if docked:
         z_text = np.round(z, 3) if marker_seen else "not in view"

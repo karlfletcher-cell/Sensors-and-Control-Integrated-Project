@@ -1,14 +1,4 @@
-'''
-Extended Kalman Filter (EKF) for a differential-drive robot.
 
-State:        x = [x, y, theta]      (robot pose in the world frame)
-Input:        u = [v, w]             (linear and angular velocity)
-Measurement:  z = [range, bearing]   (to one known marker)
-
-The EKF repeats two steps:
-    1. Predict: move the estimate forward using the motion model.
-    2. Update:  correct the estimate using a marker measurement.
-'''
 import numpy as np
 from config import DT
 

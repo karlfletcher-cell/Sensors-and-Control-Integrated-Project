@@ -28,6 +28,12 @@ MARKER_ID   = 0                   # ArUco id (DICT_4X4_50)
 WAYPOINTS = [(-1.5, -2.2), (0.5, -2.2), (2.2, -1.5), (2.2, 0.0), (2.0, 1.5)]   # last one: in front of the dock
 V = 0.2                           # cruise speed [m/s]
 
+# ---- LiDAR obstacle avoidance (P1) ---------------------------------------------
+GOAL       = (2.0, 1.5)           # where the robot drives to by itself: just in front of the dock
+GOAL_TOL   = 0.15                 # [m] goal counts as reached when the estimate is this close
+SAFE_DIST  = 0.5                  # [m] anything closer than this blocks that direction
+HALF_WIDTH = 0.25                 # [m] half the width of the path the robot needs (body 0.14 + gap)
+
 # ---- estimator (P3) -------------------------------------------------------------
 INIT_OFFSET = np.array([0.3, -0.2, np.deg2rad(10)])    # deliberate error added to the initial belief
 P0 = np.diag([0.3**2, 0.3**2, np.deg2rad(15)**2])      # initial covariance
