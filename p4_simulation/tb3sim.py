@@ -42,11 +42,15 @@ class TB3Sim:
     CAM_W, CAM_H = config.CAM_W, config.CAM_H
 
     def __init__(self, xml=os.path.join(HERE, "tb3_scene.xml"), dt=0.05, render=True,
-                 slip_std=0.0, seed=0):
-        """slip_std: process noise. Each period the executed (v, w) are scaled by
-        (1 + N(0, slip_std)) independently per wheel, emulating wheel slip. 0 = ideal."""
+                 slip_std=0.0, enc_noise_std=0.0, seed=0):
+        """slip_std:      process noise. Each period the executed (v, w) are scaled by
+                        (1 + N(0, slip_std)) independently per wheel, emulating wheel slip. 0 = ideal.
+        enc_noise_std:  additive Gaussian noise [m] on each wheel's reported travel per period
+                        (encoder quantisation / read error). 0 = perfect encoders.
+        seed:           fixes every random draw in this sim, so a run is reproducible."""
         self.rng = np.random.default_rng(seed)
         self.slip_std = slip_std
+        self.enc_noise_std = enc_noise_std
         self.model = mujoco.MjModel.from_xml_path(xml)
         self.data = mujoco.MjData(self.model)
         self.dt = dt                                   # control period [s]
@@ -84,20 +88,43 @@ class TB3Sim:
             self.data.ctrl[:] = [v_e * np.cos(th), v_e * np.sin(th), w_e, wl, wr]
             mujoco.mj_step(self.model, self.data)
 
+    # ------------------------------------------------------------ disturbances (robustness trials)
+    def push(self, dx=0.0, dy=0.0, dyaw=0.0):
+        """Shove the robot: instantly displace the TRUE pose. The estimator is not told."""
+        self.data.qpos[0] += dx
+        self.data.qpos[1] += dy
+        self.data.qpos[2] += dyaw
+        mujoco.mj_forward(self.model, self.data)
+
+    def hide_marker(self, hidden=True):
+        """Marker blackout: make the ArUco marker invisible (someone standing in front of the dock)."""
+        self.model.geom("marker").rgba[3] = 0.0 if hidden else 1.0
+
+    def in_collision(self):
+        """True if any robot geom is touching something other than the floor (evaluation only)."""
+        robot_body = self.model.body("robot").id
+        for c in self.data.contact[:self.data.ncon]:
+            b1 = self.model.geom_bodyid[c.geom1]; b2 = self.model.geom_bodyid[c.geom2]
+            r1 = self.model.body_rootid[b1] == robot_body; r2 = self.model.body_rootid[b2] == robot_body
+            if r1 != r2:                                   # one side robot, other side world
+                other = c.geom2 if r1 else c.geom1
+                if self.model.geom(other).name != "floor":
+                    return True
+        return False
+
     # ------------------------------------------------------------ sensors
     def _encoders(self):
         return np.array([self.data.sensor("enc_l").data[0],
                          self.data.sensor("enc_r").data[0]])
 
-    def odometry(self, noise_std=0.0):
-        """Wheel travel (dl, dr) in metres since the last call.
-        noise_std: optional additive Gaussian noise [m] to emulate encoder error.
+    def odometry(self):
+        """Wheel travel (dl, dr) in metres since the last call, plus encoder noise (enc_noise_std).
         Convert to body motion with:  ds = (dl+dr)/2,  dth = (dr-dl)/WHEEL_SEP."""
         enc = self._encoders()
         d = (enc - self._enc_prev) * self.WHEEL_R
         self._enc_prev = enc
-        if noise_std > 0:
-            d = d + np.random.normal(0, noise_std, 2)
+        if self.enc_noise_std > 0:
+            d = d + self.rng.normal(0, self.enc_noise_std, 2)
         return d[0], d[1]
 
     def odom_vw(self):
