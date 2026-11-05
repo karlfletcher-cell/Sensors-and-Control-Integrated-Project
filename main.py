@@ -1,132 +1,34 @@
-# =============================================================================
-# IMPORTS
-# =============================================================================
-import time
-import numpy as np
-import mujoco.viewer
-from p4_simulation.tb3sim import TB3Sim
-from p1_control.controller import avoid_controller, dock_command
-from p2_sensing.sensing import measure
-from p3_estimation.Estimation import (odometry_to_input, motion_model, motion_jacobian,
-                                     predict_range_bearing, measurement_jacobian,
-                                     range_bearing_residual, ekf_predict, ekf_update)
-from config import DT, SLIP_STD, WHEEL_SEP, GOAL, GOAL_TOL, ROBOT_START, INIT_OFFSET, P0, Qd, Rn
+"""
+main.py — run the full pipeline once and save the log.
 
+    python main.py                   # 3D viewer + camera-POV window (nominal run, seed 0)
+    python main.py --headless        # no windows (servers / CI / recording figures)
+    python main.py --no-ekf          # dead-reckoning baseline: camera measurements ignored
+    python main.py --seed 3          # a different random draw of slip
+    python main.py --push            # a shove mid-run         (disturbed trial for the video)
+    python main.py --blackout        # marker hidden for 6 s   (disturbed trial for the video)
+    python main.py --record          # also write analysis/camera_pov.mp4
+Then:  python -m p4_simulation.plot_run run_log.npz   -> analysis/fig_*.png
+The loop itself lives in p4_simulation/episode.py (run_episode), so run_trials.py can call it too.
+"""
+import sys, os, numpy as np
+from p4_simulation.episode import run_episode
 
-# =============================================================================
-# SETTINGS
-# =============================================================================
-MAX_STEPS = 800              # give up after this many control steps
+args = sys.argv[1:]
+seed = int(args[args.index("--seed") + 1]) if "--seed" in args else 0
+headless = "--headless" in args
+os.makedirs("analysis", exist_ok=True)
 
+kw = dict(seed=seed, viewer=not headless, camera_pov=not headless,
+          record_pov="analysis/camera_pov.mp4" if "--record" in args else None,
+          use_ekf_update="--no-ekf" not in args)
+if "--push" in args:
+    kw.update(push_at=150, push=(0.25, -0.25, np.deg2rad(15)))
+if "--blackout" in args:
+    kw.update(blackout=(250, 310))
 
-# =============================================================================
-# HELPERS
-# =============================================================================
-def distance_to(point, xh):
-    """Straight-line distance [m] from the estimated position to a 2D point."""
-    return np.hypot(*(np.array(point) - xh[:2]))
-
-
-# =============================================================================
-# SIMULATOR SETUP
-# Create the sim and read the fixed values the other modules need.
-# =============================================================================
-sim = TB3Sim(dt=DT, slip_std=SLIP_STD)
-MARKER = sim.marker_xy()          # marker (landmark) position in the world
-K_cam = sim.camera_intrinsics()   # camera intrinsic matrix
-T_bc  = sim.T_base_cam()          # transform from robot base to camera
-
-
-# =============================================================================
-# INITIAL STATE
-# The estimate starts deliberately wrong so the EKF has something to correct.
-# =============================================================================
-sim.reset()
-xh = np.array(ROBOT_START) + INIT_OFFSET   # estimated pose [x, y, theta]: known start + deliberate error
-P  = P0.copy()                    # estimate covariance
-docked = False
-
-log = dict(true=[], xh=[], P=[], seen=[])
-viewer = mujoco.viewer.launch_passive(sim.model, sim.data)
-
-
-# =============================================================================
-# MAIN LOOP
-# =============================================================================
-for k in range(MAX_STEPS):
-
-    # -------------------------------------------------------------------------
-    # 1. CONTROL - choose (v, w) from the ESTIMATE and the LiDAR, then step the sim
-    #    The robot picks its own path to the goal, steering around obstacles.
-    #    At the goal, switch to docking: stop and face the marker.
-    # -------------------------------------------------------------------------
-    if distance_to(GOAL, xh) < GOAL_TOL:
-        v, w, docked = dock_command(xh, MARKER)
-    else:
-        v, w = avoid_controller(xh, GOAL, sim.lidar(), sim.lidar_angles())
-    sim.step(v, w)
-
-    # -------------------------------------------------------------------------
-    # 2. PREDICT - EKF predict, using wheel odometry as the input u = [v, w]
-    # -------------------------------------------------------------------------
-    dl, dr = sim.odometry()           # left/right wheel travel this step [m]
-    u = odometry_to_input(dl, dr, WHEEL_SEP)
-    xh, P = ekf_predict(xh, P, u, motion_model, motion_jacobian, Qd)
-
-    # -------------------------------------------------------------------------
-    # 3. SENSE + UPDATE - camera -> range/bearing to marker -> EKF update
-    # -------------------------------------------------------------------------
-    z = measure(sim.camera(), K_cam, T_bc)   # [range, bearing], or None if marker not in view
-    marker_seen = z is not None
-    if marker_seen:
-        xh, P, _, _ = ekf_update(xh, P, z,
-                                 lambda s: predict_range_bearing(s, MARKER),
-                                 lambda s: measurement_jacobian(s, MARKER),
-                                 Rn, residual=range_bearing_residual)
-
-    # -------------------------------------------------------------------------
-    # 4. LOGGING - ground truth is recorded here for evaluation only
-    # -------------------------------------------------------------------------
-    log["true"].append(sim.true_pose())   # EVALUATION ONLY
-    log["xh"].append(xh.copy())
-    log["P"].append(P.copy())
-    log["seen"].append(marker_seen)
-
-    # -------------------------------------------------------------------------
-    # 5. VIEWER - redraw the 3D window at real time; stop if it is closed
-    # -------------------------------------------------------------------------
-    viewer.sync()
-    time.sleep(DT)
-    if not viewer.is_running():
-        break
-
-    # -------------------------------------------------------------------------
-    # 6. STOP CONDITION - finish once docked at the marker
-    # -------------------------------------------------------------------------
-    if docked:
-        z_text = np.round(z, 3) if marker_seen else "not in view"
-        print(f"docked at step {k}: marker measured at range/bearing {z_text}")
-        break
-
-
-# =============================================================================
-# RESULTS - compare the estimate with ground truth and save the log
-# =============================================================================
-true_poses = np.array(log["true"])
-est_poses = np.array(log["xh"])
-pos_err = np.linalg.norm(true_poses[:, :2] - est_poses[:, :2], axis=1)   # [m] each step
-seen_pct = np.mean(log["seen"]) * 100
-
-print(f"final true pose {np.round(true_poses[-1], 3)}  estimate {np.round(est_poses[-1], 3)}")
-print(f"position error: mean {pos_err.mean():.3f} m, final {pos_err[-1]:.3f} m; "
-      f"marker seen in {seen_pct:.0f}% of steps")
-np.savez("run_log.npz", **{name: np.array(values) for name, values in log.items()})
-
-
-# =============================================================================
-# KEEP VIEWER OPEN - wait until the user closes the window
-# =============================================================================
-while viewer.is_running():
-    viewer.sync()
-    time.sleep(0.05)
-viewer.close()
+log = run_episode(**kw)
+tag = "deadreck" if "--no-ekf" in args else "push" if "--push" in args else "blackout" if "--blackout" in args else "nominal"
+fn = f"run_log_{tag}.npz" if tag != "nominal" else "run_log.npz"
+np.savez(fn, **{k: v for k, v in log.items() if isinstance(v, np.ndarray)})
+print("saved", fn)
