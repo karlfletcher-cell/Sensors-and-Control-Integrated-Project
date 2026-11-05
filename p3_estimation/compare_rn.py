@@ -35,7 +35,7 @@ baseline_label = next(iter(RN_OPTIONS))
 baseline_rms = results[baseline_label][:, 2]
 
 for label, runs in results.items():
-    print(f"{label:27s} docked {int(runs[:, 0].sum())}/{len(SEEDS)}   "
+    print(f"{label:27s} success {int(runs[:, 0].sum())}/{len(SEEDS)}   "
           f"final error {runs[:, 1].mean() * 100:.2f} cm   "
           f"rms error {runs[:, 2].mean() * 100:.2f} cm (std {runs[:, 2].std() * 100:.2f} cm)   "
           f"rms lower than old guess on {int((runs[:, 2] < baseline_rms).sum())} seeds")

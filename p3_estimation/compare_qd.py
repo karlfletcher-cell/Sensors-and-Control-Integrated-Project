@@ -34,7 +34,7 @@ for label, (position_noise, heading_noise_deg) in QD_OPTIONS.items():
     results[label] = np.array(runs, float)
 
 for label, runs in results.items():
-    print(f"{label:28s} docked {int(runs[:, 0].sum())}/{len(SEEDS)}   "
+    print(f"{label:28s} success {int(runs[:, 0].sum())}/{len(SEEDS)}   "
           f"final error {runs[:, 1].mean() * 100:5.2f} cm   "
           f"rms error {runs[:, 2].mean() * 100:5.2f} cm (std {runs[:, 2].std() * 100:.2f} cm)   "
           f"inside 2-sigma {runs[:, 3].mean() * 100:3.0f}%   "
