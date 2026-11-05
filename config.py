@@ -38,4 +38,4 @@ HALF_WIDTH = 0.25                 # [m] half the width of the path the robot nee
 INIT_OFFSET = np.array([0.3, -0.2, np.deg2rad(10)])    # deliberate error added to the initial belief
 P0 = np.diag([0.3**2, 0.3**2, np.deg2rad(15)**2])      # initial covariance
 Qd = np.diag([0.02**2, 0.02**2, np.deg2rad(1.5)**2])   # process noise
-Rn = np.diag([0.10**2, np.deg2rad(3.0)**2])            # measurement noise (range, bearing)
+Rn = np.diag([0.02**2, np.deg2rad(0.5)**2])      # measurement noise (range, bearing)
