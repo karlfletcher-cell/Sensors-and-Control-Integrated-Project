@@ -1,0 +1,247 @@
+<mujoco model="tb3_waffle_room">
+      <option timestep="0.002" integrator="implicitfast" cone="elliptic" impratio="10"/>
+      <compiler angle="radian"/>
+      <visual><global offwidth="640" offheight="480"/></visual>
+
+      <asset>
+        <texture name="floor_tex" type="2d" builtin="checker" rgb1="0.8 0.8 0.8" rgb2="0.6 0.6 0.6" width="300" height="300"/>
+        <material name="floor_mat" texture="floor_tex" texrepeat="12 12" reflectance="0"/>
+        <texture name="aruco_tex" type="2d" file="assets/aruco_0.png"/>
+        <material name="aruco_mat" texture="aruco_tex" reflectance="0" specular="0" shininess="0" emission="1"/>
+      </asset>
+
+      <default>
+        <geom friction="1 0.005 0.0001"/>
+    
+      </default>
+
+      <worldbody>
+        <light pos="0 0 4" dir="0 0 -1" diffuse="0.8 0.8 0.8" specular="0 0 0" castshadow="false"/>
+        <light pos="2 2 3" dir="-1 -1 -1" diffuse="0.5 0.5 0.5" specular="0 0 0" castshadow="false"/>
+        <geom name="floor" type="plane" size="3.0 3.0 0.1" material="floor_mat"/>
+
+        <!-- walls -->
+        <geom type="box" pos="0 3.0 0.25"  size="3.0 0.05 0.25" rgba="0.85 0.85 0.9 1"/>
+        <geom type="box" pos="0 -3.0 0.25" size="3.0 0.05 0.25" rgba="0.85 0.85 0.9 1"/>
+        <geom type="box" pos="3.0 0 0.25"  size="0.05 3.0 0.25" rgba="0.85 0.85 0.9 1"/>
+        <geom type="box" pos="-3.0 0 0.25" size="0.05 3.0 0.25" rgba="0.85 0.85 0.9 1"/>
+
+        <geom name="obs0" type="box" pos="0.0 0.8 0.25" size="0.25 0.25 0.25" rgba="0.6 0.3 0.2 1"/>
+    <geom name="obs1" type="box" pos="1.2 -0.9 0.25" size="0.4 0.2 0.25" rgba="0.6 0.3 0.2 1"/>
+    <geom name="obs2" type="box" pos="-1.0 -1.2 0.25" size="0.2 0.4 0.25" rgba="0.6 0.3 0.2 1"/>
+    <geom name="obs3" type="box" pos="0.3 -0.6 0.25" size="0.2 0.2 0.25" rgba="0.6 0.3 0.2 1"/>
+    <geom name="obs4" type="box" pos="1.6 0.6 0.25" size="0.15 0.3 0.25" rgba="0.6 0.3 0.2 1"/>
+
+        <!-- charging dock with ArUco marker on its front face -->
+        <body name="dock" pos="2.6 1.5 0" euler="0 0 3.141592653589793">
+          <geom name="dock_box" type="box" pos="-0.05 0 0.15" size="0.05 0.2 0.15" rgba="0.2 0.2 0.25 1"/>
+          <!-- plane normal is +z; rotate so it faces -x of the dock body (= into the room) -->
+          <geom name="marker" type="plane" pos="0.001 0 0.12" zaxis="1 0 0"
+                size="0.1250 0.1250 0.001" material="aruco_mat" contype="0" conaffinity="0"/>
+          <site name="marker_site" pos="0 0 0.12" size="0.01" rgba="0 1 0 0"/>
+        </body>
+
+        <!-- TurtleBot3 Waffle (differential drive) -->
+        <body name="robot" pos="0 0 0">
+          <!-- planar base: x, y, yaw, driven kinematically (unicycle model) by velocity servos.
+               MuJoCo supplies the world, collisions, LiDAR ray-casting and the camera; the
+               wheel/floor contact is NOT simulated (wheels are visual + encoder joints only).
+               Wheel slip / process noise is injected in tb3sim.step(). -->
+          <joint name="base_x"   type="slide" axis="1 0 0"/>
+          <joint name="base_y"   type="slide" axis="0 1 0"/>
+          <joint name="base_yaw" type="hinge" axis="0 0 1"/>
+          <site name="base_site" pos="0 0 0" size="0.01" rgba="1 0 0 0"/>
+          <geom name="chassis" type="box" pos="0 0 0.075" size="0.14 0.14 0.035" rgba="0.1 0.1 0.1 1" mass="1.5" friction="0.2"/>
+          <geom name="nose" type="box" pos="0.14 0 0.075" size="0.02 0.05 0.02" rgba="1 0.5 0 1" mass="0.01"/>
+          <!-- caster balls, visual only (the planar joint carries the weight) -->
+          <geom name="caster_f" type="sphere" pos="0.11000000000000001 0 0.015" size="0.015" contype="0" conaffinity="0" rgba="0.5 0.5 0.5 1" mass="0.05"/>
+          <geom name="caster_b" type="sphere" pos="-0.11000000000000001 0 0.015" size="0.015" contype="0" conaffinity="0" rgba="0.5 0.5 0.5 1" mass="0.05"/>
+
+          <body name="wheel_l" pos="0 0.1435 0.033">
+            <joint name="wheel_l" type="hinge" axis="0 1 0"/>
+            <geom type="cylinder" size="0.033 0.018" euler="1.5707963 0 0" rgba="0.2 0.2 0.2 1" mass="0.1" contype="0" conaffinity="0"/>
+          </body>
+          <body name="wheel_r" pos="0 -0.1435 0.033">
+            <joint name="wheel_r" type="hinge" axis="0 1 0"/>
+            <geom type="cylinder" size="0.033 0.018" euler="1.5707963 0 0" rgba="0.2 0.2 0.2 1" mass="0.1" contype="0" conaffinity="0"/>
+          </body>
+
+          <!-- LDS-01 LiDAR: N rays in the horizontal plane -->
+          <body name="lidar" pos="0 0 0.17">
+            <geom type="cylinder" size="0.035 0.02" rgba="0.3 0.3 0.3 1" mass="0.1" contype="0" conaffinity="0"/>
+          <site name="ray0" pos="0 0 0" zaxis="1.000000 0.000000 0" size="0.005"/>
+      <site name="ray1" pos="0 0 0" zaxis="0.996195 0.087156 0" size="0.005"/>
+      <site name="ray2" pos="0 0 0" zaxis="0.984808 0.173648 0" size="0.005"/>
+      <site name="ray3" pos="0 0 0" zaxis="0.965926 0.258819 0" size="0.005"/>
+      <site name="ray4" pos="0 0 0" zaxis="0.939693 0.342020 0" size="0.005"/>
+      <site name="ray5" pos="0 0 0" zaxis="0.906308 0.422618 0" size="0.005"/>
+      <site name="ray6" pos="0 0 0" zaxis="0.866025 0.500000 0" size="0.005"/>
+      <site name="ray7" pos="0 0 0" zaxis="0.819152 0.573576 0" size="0.005"/>
+      <site name="ray8" pos="0 0 0" zaxis="0.766044 0.642788 0" size="0.005"/>
+      <site name="ray9" pos="0 0 0" zaxis="0.707107 0.707107 0" size="0.005"/>
+      <site name="ray10" pos="0 0 0" zaxis="0.642788 0.766044 0" size="0.005"/>
+      <site name="ray11" pos="0 0 0" zaxis="0.573576 0.819152 0" size="0.005"/>
+      <site name="ray12" pos="0 0 0" zaxis="0.500000 0.866025 0" size="0.005"/>
+      <site name="ray13" pos="0 0 0" zaxis="0.422618 0.906308 0" size="0.005"/>
+      <site name="ray14" pos="0 0 0" zaxis="0.342020 0.939693 0" size="0.005"/>
+      <site name="ray15" pos="0 0 0" zaxis="0.258819 0.965926 0" size="0.005"/>
+      <site name="ray16" pos="0 0 0" zaxis="0.173648 0.984808 0" size="0.005"/>
+      <site name="ray17" pos="0 0 0" zaxis="0.087156 0.996195 0" size="0.005"/>
+      <site name="ray18" pos="0 0 0" zaxis="0.000000 1.000000 0" size="0.005"/>
+      <site name="ray19" pos="0 0 0" zaxis="-0.087156 0.996195 0" size="0.005"/>
+      <site name="ray20" pos="0 0 0" zaxis="-0.173648 0.984808 0" size="0.005"/>
+      <site name="ray21" pos="0 0 0" zaxis="-0.258819 0.965926 0" size="0.005"/>
+      <site name="ray22" pos="0 0 0" zaxis="-0.342020 0.939693 0" size="0.005"/>
+      <site name="ray23" pos="0 0 0" zaxis="-0.422618 0.906308 0" size="0.005"/>
+      <site name="ray24" pos="0 0 0" zaxis="-0.500000 0.866025 0" size="0.005"/>
+      <site name="ray25" pos="0 0 0" zaxis="-0.573576 0.819152 0" size="0.005"/>
+      <site name="ray26" pos="0 0 0" zaxis="-0.642788 0.766044 0" size="0.005"/>
+      <site name="ray27" pos="0 0 0" zaxis="-0.707107 0.707107 0" size="0.005"/>
+      <site name="ray28" pos="0 0 0" zaxis="-0.766044 0.642788 0" size="0.005"/>
+      <site name="ray29" pos="0 0 0" zaxis="-0.819152 0.573576 0" size="0.005"/>
+      <site name="ray30" pos="0 0 0" zaxis="-0.866025 0.500000 0" size="0.005"/>
+      <site name="ray31" pos="0 0 0" zaxis="-0.906308 0.422618 0" size="0.005"/>
+      <site name="ray32" pos="0 0 0" zaxis="-0.939693 0.342020 0" size="0.005"/>
+      <site name="ray33" pos="0 0 0" zaxis="-0.965926 0.258819 0" size="0.005"/>
+      <site name="ray34" pos="0 0 0" zaxis="-0.984808 0.173648 0" size="0.005"/>
+      <site name="ray35" pos="0 0 0" zaxis="-0.996195 0.087156 0" size="0.005"/>
+      <site name="ray36" pos="0 0 0" zaxis="-1.000000 0.000000 0" size="0.005"/>
+      <site name="ray37" pos="0 0 0" zaxis="-0.996195 -0.087156 0" size="0.005"/>
+      <site name="ray38" pos="0 0 0" zaxis="-0.984808 -0.173648 0" size="0.005"/>
+      <site name="ray39" pos="0 0 0" zaxis="-0.965926 -0.258819 0" size="0.005"/>
+      <site name="ray40" pos="0 0 0" zaxis="-0.939693 -0.342020 0" size="0.005"/>
+      <site name="ray41" pos="0 0 0" zaxis="-0.906308 -0.422618 0" size="0.005"/>
+      <site name="ray42" pos="0 0 0" zaxis="-0.866025 -0.500000 0" size="0.005"/>
+      <site name="ray43" pos="0 0 0" zaxis="-0.819152 -0.573576 0" size="0.005"/>
+      <site name="ray44" pos="0 0 0" zaxis="-0.766044 -0.642788 0" size="0.005"/>
+      <site name="ray45" pos="0 0 0" zaxis="-0.707107 -0.707107 0" size="0.005"/>
+      <site name="ray46" pos="0 0 0" zaxis="-0.642788 -0.766044 0" size="0.005"/>
+      <site name="ray47" pos="0 0 0" zaxis="-0.573576 -0.819152 0" size="0.005"/>
+      <site name="ray48" pos="0 0 0" zaxis="-0.500000 -0.866025 0" size="0.005"/>
+      <site name="ray49" pos="0 0 0" zaxis="-0.422618 -0.906308 0" size="0.005"/>
+      <site name="ray50" pos="0 0 0" zaxis="-0.342020 -0.939693 0" size="0.005"/>
+      <site name="ray51" pos="0 0 0" zaxis="-0.258819 -0.965926 0" size="0.005"/>
+      <site name="ray52" pos="0 0 0" zaxis="-0.173648 -0.984808 0" size="0.005"/>
+      <site name="ray53" pos="0 0 0" zaxis="-0.087156 -0.996195 0" size="0.005"/>
+      <site name="ray54" pos="0 0 0" zaxis="-0.000000 -1.000000 0" size="0.005"/>
+      <site name="ray55" pos="0 0 0" zaxis="0.087156 -0.996195 0" size="0.005"/>
+      <site name="ray56" pos="0 0 0" zaxis="0.173648 -0.984808 0" size="0.005"/>
+      <site name="ray57" pos="0 0 0" zaxis="0.258819 -0.965926 0" size="0.005"/>
+      <site name="ray58" pos="0 0 0" zaxis="0.342020 -0.939693 0" size="0.005"/>
+      <site name="ray59" pos="0 0 0" zaxis="0.422618 -0.906308 0" size="0.005"/>
+      <site name="ray60" pos="0 0 0" zaxis="0.500000 -0.866025 0" size="0.005"/>
+      <site name="ray61" pos="0 0 0" zaxis="0.573576 -0.819152 0" size="0.005"/>
+      <site name="ray62" pos="0 0 0" zaxis="0.642788 -0.766044 0" size="0.005"/>
+      <site name="ray63" pos="0 0 0" zaxis="0.707107 -0.707107 0" size="0.005"/>
+      <site name="ray64" pos="0 0 0" zaxis="0.766044 -0.642788 0" size="0.005"/>
+      <site name="ray65" pos="0 0 0" zaxis="0.819152 -0.573576 0" size="0.005"/>
+      <site name="ray66" pos="0 0 0" zaxis="0.866025 -0.500000 0" size="0.005"/>
+      <site name="ray67" pos="0 0 0" zaxis="0.906308 -0.422618 0" size="0.005"/>
+      <site name="ray68" pos="0 0 0" zaxis="0.939693 -0.342020 0" size="0.005"/>
+      <site name="ray69" pos="0 0 0" zaxis="0.965926 -0.258819 0" size="0.005"/>
+      <site name="ray70" pos="0 0 0" zaxis="0.984808 -0.173648 0" size="0.005"/>
+      <site name="ray71" pos="0 0 0" zaxis="0.996195 -0.087156 0" size="0.005"/>
+          </body>
+
+          <!-- forward-looking camera: MuJoCo cameras look along -z with y up -->
+          <camera name="cam" pos="0.1 0.0 0.12" xyaxes="0 -1 0 0 0 1" fovy="48"/>
+        </body>
+      </worldbody>
+
+      <keyframe>
+        <key name="start" qpos="-2.0 -1.5 0.0 0 0"/>
+      </keyframe>
+
+      <actuator>
+        <!-- base velocity servos: ctrl = (vx, vy, yaw rate) in the WORLD frame, set by tb3sim.step() -->
+        <velocity name="act_x"   joint="base_x"   kv="200"/>
+        <velocity name="act_y"   joint="base_y"   kv="200"/>
+        <velocity name="act_yaw" joint="base_yaw" kv="20"/>
+        <!-- wheel servos so the encoders turn like a real robot's -->
+        <velocity name="act_l" joint="wheel_l" kv="2.0" ctrlrange="-30 30"/>
+        <velocity name="act_r" joint="wheel_r" kv="2.0" ctrlrange="-30 30"/>
+      </actuator>
+
+      <sensor>
+        <!-- wheel encoders (what the real robot has) -->
+        <jointpos name="enc_l" joint="wheel_l"/>
+        <jointpos name="enc_r" joint="wheel_r"/>
+        <!-- ground truth: EVALUATION ONLY, never feed to the controller -->
+        <framepos  name="gt_pos" objtype="site" objname="base_site"/>
+        <framequat name="gt_quat" objtype="site" objname="base_site"/>
+        <framepos  name="marker_pos" objtype="site" objname="marker_site"/>
+        <rangefinder name="lidar0" site="ray0" cutoff="3.5"/>
+    <rangefinder name="lidar1" site="ray1" cutoff="3.5"/>
+    <rangefinder name="lidar2" site="ray2" cutoff="3.5"/>
+    <rangefinder name="lidar3" site="ray3" cutoff="3.5"/>
+    <rangefinder name="lidar4" site="ray4" cutoff="3.5"/>
+    <rangefinder name="lidar5" site="ray5" cutoff="3.5"/>
+    <rangefinder name="lidar6" site="ray6" cutoff="3.5"/>
+    <rangefinder name="lidar7" site="ray7" cutoff="3.5"/>
+    <rangefinder name="lidar8" site="ray8" cutoff="3.5"/>
+    <rangefinder name="lidar9" site="ray9" cutoff="3.5"/>
+    <rangefinder name="lidar10" site="ray10" cutoff="3.5"/>
+    <rangefinder name="lidar11" site="ray11" cutoff="3.5"/>
+    <rangefinder name="lidar12" site="ray12" cutoff="3.5"/>
+    <rangefinder name="lidar13" site="ray13" cutoff="3.5"/>
+    <rangefinder name="lidar14" site="ray14" cutoff="3.5"/>
+    <rangefinder name="lidar15" site="ray15" cutoff="3.5"/>
+    <rangefinder name="lidar16" site="ray16" cutoff="3.5"/>
+    <rangefinder name="lidar17" site="ray17" cutoff="3.5"/>
+    <rangefinder name="lidar18" site="ray18" cutoff="3.5"/>
+    <rangefinder name="lidar19" site="ray19" cutoff="3.5"/>
+    <rangefinder name="lidar20" site="ray20" cutoff="3.5"/>
+    <rangefinder name="lidar21" site="ray21" cutoff="3.5"/>
+    <rangefinder name="lidar22" site="ray22" cutoff="3.5"/>
+    <rangefinder name="lidar23" site="ray23" cutoff="3.5"/>
+    <rangefinder name="lidar24" site="ray24" cutoff="3.5"/>
+    <rangefinder name="lidar25" site="ray25" cutoff="3.5"/>
+    <rangefinder name="lidar26" site="ray26" cutoff="3.5"/>
+    <rangefinder name="lidar27" site="ray27" cutoff="3.5"/>
+    <rangefinder name="lidar28" site="ray28" cutoff="3.5"/>
+    <rangefinder name="lidar29" site="ray29" cutoff="3.5"/>
+    <rangefinder name="lidar30" site="ray30" cutoff="3.5"/>
+    <rangefinder name="lidar31" site="ray31" cutoff="3.5"/>
+    <rangefinder name="lidar32" site="ray32" cutoff="3.5"/>
+    <rangefinder name="lidar33" site="ray33" cutoff="3.5"/>
+    <rangefinder name="lidar34" site="ray34" cutoff="3.5"/>
+    <rangefinder name="lidar35" site="ray35" cutoff="3.5"/>
+    <rangefinder name="lidar36" site="ray36" cutoff="3.5"/>
+    <rangefinder name="lidar37" site="ray37" cutoff="3.5"/>
+    <rangefinder name="lidar38" site="ray38" cutoff="3.5"/>
+    <rangefinder name="lidar39" site="ray39" cutoff="3.5"/>
+    <rangefinder name="lidar40" site="ray40" cutoff="3.5"/>
+    <rangefinder name="lidar41" site="ray41" cutoff="3.5"/>
+    <rangefinder name="lidar42" site="ray42" cutoff="3.5"/>
+    <rangefinder name="lidar43" site="ray43" cutoff="3.5"/>
+    <rangefinder name="lidar44" site="ray44" cutoff="3.5"/>
+    <rangefinder name="lidar45" site="ray45" cutoff="3.5"/>
+    <rangefinder name="lidar46" site="ray46" cutoff="3.5"/>
+    <rangefinder name="lidar47" site="ray47" cutoff="3.5"/>
+    <rangefinder name="lidar48" site="ray48" cutoff="3.5"/>
+    <rangefinder name="lidar49" site="ray49" cutoff="3.5"/>
+    <rangefinder name="lidar50" site="ray50" cutoff="3.5"/>
+    <rangefinder name="lidar51" site="ray51" cutoff="3.5"/>
+    <rangefinder name="lidar52" site="ray52" cutoff="3.5"/>
+    <rangefinder name="lidar53" site="ray53" cutoff="3.5"/>
+    <rangefinder name="lidar54" site="ray54" cutoff="3.5"/>
+    <rangefinder name="lidar55" site="ray55" cutoff="3.5"/>
+    <rangefinder name="lidar56" site="ray56" cutoff="3.5"/>
+    <rangefinder name="lidar57" site="ray57" cutoff="3.5"/>
+    <rangefinder name="lidar58" site="ray58" cutoff="3.5"/>
+    <rangefinder name="lidar59" site="ray59" cutoff="3.5"/>
+    <rangefinder name="lidar60" site="ray60" cutoff="3.5"/>
+    <rangefinder name="lidar61" site="ray61" cutoff="3.5"/>
+    <rangefinder name="lidar62" site="ray62" cutoff="3.5"/>
+    <rangefinder name="lidar63" site="ray63" cutoff="3.5"/>
+    <rangefinder name="lidar64" site="ray64" cutoff="3.5"/>
+    <rangefinder name="lidar65" site="ray65" cutoff="3.5"/>
+    <rangefinder name="lidar66" site="ray66" cutoff="3.5"/>
+    <rangefinder name="lidar67" site="ray67" cutoff="3.5"/>
+    <rangefinder name="lidar68" site="ray68" cutoff="3.5"/>
+    <rangefinder name="lidar69" site="ray69" cutoff="3.5"/>
+    <rangefinder name="lidar70" site="ray70" cutoff="3.5"/>
+    <rangefinder name="lidar71" site="ray71" cutoff="3.5"/>
+      </sensor>
+    </mujoco>
+    

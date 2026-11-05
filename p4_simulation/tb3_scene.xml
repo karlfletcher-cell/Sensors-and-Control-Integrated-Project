@@ -1,73 +1,73 @@
 <mujoco model="tb3_waffle_room">
-  <option timestep="0.002" integrator="implicitfast" cone="elliptic" impratio="10"/>
-  <compiler angle="radian"/>
-  <visual><global offwidth="640" offheight="480"/></visual>
+      <option timestep="0.002" integrator="implicitfast" cone="elliptic" impratio="10"/>
+      <compiler angle="radian"/>
+      <visual><global offwidth="640" offheight="480"/></visual>
 
-  <asset>
-    <texture name="floor_tex" type="2d" builtin="checker" rgb1="0.8 0.8 0.8" rgb2="0.6 0.6 0.6" width="300" height="300"/>
-    <material name="floor_mat" texture="floor_tex" texrepeat="12 12" reflectance="0"/>
-    <texture name="aruco_tex" type="2d" file="assets/aruco_0.png"/>
-    <material name="aruco_mat" texture="aruco_tex" reflectance="0" specular="0" shininess="0" emission="1"/>
-  </asset>
+      <asset>
+        <texture name="floor_tex" type="2d" builtin="checker" rgb1="0.8 0.8 0.8" rgb2="0.6 0.6 0.6" width="300" height="300"/>
+        <material name="floor_mat" texture="floor_tex" texrepeat="12 12" reflectance="0"/>
+        <texture name="aruco_tex" type="2d" file="assets/aruco_0.png"/>
+        <material name="aruco_mat" texture="aruco_tex" reflectance="0" specular="0" shininess="0" emission="1"/>
+      </asset>
 
-  <default>
-    <geom friction="1 0.005 0.0001"/>
+      <default>
+        <geom friction="1 0.005 0.0001"/>
     
-  </default>
+      </default>
 
-  <worldbody>
-    <light pos="0 0 4" dir="0 0 -1" diffuse="0.8 0.8 0.8" specular="0 0 0" castshadow="false"/>
-    <light pos="2 2 3" dir="-1 -1 -1" diffuse="0.5 0.5 0.5" specular="0 0 0" castshadow="false"/>
-    <geom name="floor" type="plane" size="3.0 3.0 0.1" material="floor_mat"/>
+      <worldbody>
+        <light pos="0 0 4" dir="0 0 -1" diffuse="0.8 0.8 0.8" specular="0 0 0" castshadow="false"/>
+        <light pos="2 2 3" dir="-1 -1 -1" diffuse="0.5 0.5 0.5" specular="0 0 0" castshadow="false"/>
+        <geom name="floor" type="plane" size="3.0 3.0 0.1" material="floor_mat"/>
 
-    <!-- walls -->
-    <geom type="box" pos="0 3.0 0.25"  size="3.0 0.05 0.25" rgba="0.85 0.85 0.9 1"/>
-    <geom type="box" pos="0 -3.0 0.25" size="3.0 0.05 0.25" rgba="0.85 0.85 0.9 1"/>
-    <geom type="box" pos="3.0 0 0.25"  size="0.05 3.0 0.25" rgba="0.85 0.85 0.9 1"/>
-    <geom type="box" pos="-3.0 0 0.25" size="0.05 3.0 0.25" rgba="0.85 0.85 0.9 1"/>
+        <!-- walls -->
+        <geom type="box" pos="0 3.0 0.25"  size="3.0 0.05 0.25" rgba="0.85 0.85 0.9 1"/>
+        <geom type="box" pos="0 -3.0 0.25" size="3.0 0.05 0.25" rgba="0.85 0.85 0.9 1"/>
+        <geom type="box" pos="3.0 0 0.25"  size="0.05 3.0 0.25" rgba="0.85 0.85 0.9 1"/>
+        <geom type="box" pos="-3.0 0 0.25" size="0.05 3.0 0.25" rgba="0.85 0.85 0.9 1"/>
 
-    <geom name="obs0" type="box" pos="0.0 0.8 0.25" size="0.25 0.25 0.25" rgba="0.6 0.3 0.2 1"/>
+        <geom name="obs0" type="box" pos="0.0 0.8 0.25" size="0.25 0.25 0.25" rgba="0.6 0.3 0.2 1"/>
     <geom name="obs1" type="box" pos="1.2 -0.9 0.25" size="0.4 0.2 0.25" rgba="0.6 0.3 0.2 1"/>
     <geom name="obs2" type="box" pos="-1.0 -1.2 0.25" size="0.2 0.4 0.25" rgba="0.6 0.3 0.2 1"/>
 
-    <!-- charging dock with ArUco marker on its front face -->
-    <body name="dock" pos="2.6 1.5 0" euler="0 0 3.141592653589793">
-      <geom name="dock_box" type="box" pos="-0.05 0 0.15" size="0.05 0.2 0.15" rgba="0.2 0.2 0.25 1"/>
-      <!-- plane normal is +z; rotate so it faces -x of the dock body (= into the room) -->
-      <geom name="marker" type="plane" pos="0.001 0 0.12" zaxis="1 0 0"
-            size="0.1250 0.1250 0.001" material="aruco_mat" contype="0" conaffinity="0"/>
-      <site name="marker_site" pos="0 0 0.12" size="0.01" rgba="0 1 0 0"/>
-    </body>
+        <!-- charging dock with ArUco marker on its front face -->
+        <body name="dock" pos="2.6 1.5 0" euler="0 0 3.141592653589793">
+          <geom name="dock_box" type="box" pos="-0.05 0 0.15" size="0.05 0.2 0.15" rgba="0.2 0.2 0.25 1"/>
+          <!-- plane normal is +z; rotate so it faces -x of the dock body (= into the room) -->
+          <geom name="marker" type="plane" pos="0.001 0 0.12" zaxis="1 0 0"
+                size="0.1250 0.1250 0.001" material="aruco_mat" contype="0" conaffinity="0"/>
+          <site name="marker_site" pos="0 0 0.12" size="0.01" rgba="0 1 0 0"/>
+        </body>
 
-    <!-- TurtleBot3 Waffle (differential drive) -->
-    <body name="robot" pos="0 0 0">
-      <!-- planar base: x, y, yaw, driven kinematically (unicycle model) by velocity servos.
-           MuJoCo supplies the world, collisions, LiDAR ray-casting and the camera; the
-           wheel/floor contact is NOT simulated (wheels are visual + encoder joints only).
-           Wheel slip / process noise is injected in tb3sim.step(). -->
-      <joint name="base_x"   type="slide" axis="1 0 0"/>
-      <joint name="base_y"   type="slide" axis="0 1 0"/>
-      <joint name="base_yaw" type="hinge" axis="0 0 1"/>
-      <site name="base_site" pos="0 0 0" size="0.01" rgba="1 0 0 0"/>
-      <geom name="chassis" type="box" pos="0 0 0.075" size="0.14 0.14 0.035" rgba="0.1 0.1 0.1 1" mass="1.5" friction="0.2"/>
-      <geom name="nose" type="box" pos="0.14 0 0.075" size="0.02 0.05 0.02" rgba="1 0.5 0 1" mass="0.01"/>
-      <!-- caster balls, visual only (the planar joint carries the weight) -->
-      <geom name="caster_f" type="sphere" pos="0.11000000000000001 0 0.015" size="0.015" contype="0" conaffinity="0" rgba="0.5 0.5 0.5 1" mass="0.05"/>
-      <geom name="caster_b" type="sphere" pos="-0.11000000000000001 0 0.015" size="0.015" contype="0" conaffinity="0" rgba="0.5 0.5 0.5 1" mass="0.05"/>
+        <!-- TurtleBot3 Waffle (differential drive) -->
+        <body name="robot" pos="0 0 0">
+          <!-- planar base: x, y, yaw, driven kinematically (unicycle model) by velocity servos.
+               MuJoCo supplies the world, collisions, LiDAR ray-casting and the camera; the
+               wheel/floor contact is NOT simulated (wheels are visual + encoder joints only).
+               Wheel slip / process noise is injected in tb3sim.step(). -->
+          <joint name="base_x"   type="slide" axis="1 0 0"/>
+          <joint name="base_y"   type="slide" axis="0 1 0"/>
+          <joint name="base_yaw" type="hinge" axis="0 0 1"/>
+          <site name="base_site" pos="0 0 0" size="0.01" rgba="1 0 0 0"/>
+          <geom name="chassis" type="box" pos="0 0 0.075" size="0.14 0.14 0.035" rgba="0.1 0.1 0.1 1" mass="1.5" friction="0.2"/>
+          <geom name="nose" type="box" pos="0.14 0 0.075" size="0.02 0.05 0.02" rgba="1 0.5 0 1" mass="0.01"/>
+          <!-- caster balls, visual only (the planar joint carries the weight) -->
+          <geom name="caster_f" type="sphere" pos="0.11000000000000001 0 0.015" size="0.015" contype="0" conaffinity="0" rgba="0.5 0.5 0.5 1" mass="0.05"/>
+          <geom name="caster_b" type="sphere" pos="-0.11000000000000001 0 0.015" size="0.015" contype="0" conaffinity="0" rgba="0.5 0.5 0.5 1" mass="0.05"/>
 
-      <body name="wheel_l" pos="0 0.1435 0.033">
-        <joint name="wheel_l" type="hinge" axis="0 1 0"/>
-        <geom type="cylinder" size="0.033 0.018" euler="1.5707963 0 0" rgba="0.2 0.2 0.2 1" mass="0.1" contype="0" conaffinity="0"/>
-      </body>
-      <body name="wheel_r" pos="0 -0.1435 0.033">
-        <joint name="wheel_r" type="hinge" axis="0 1 0"/>
-        <geom type="cylinder" size="0.033 0.018" euler="1.5707963 0 0" rgba="0.2 0.2 0.2 1" mass="0.1" contype="0" conaffinity="0"/>
-      </body>
+          <body name="wheel_l" pos="0 0.1435 0.033">
+            <joint name="wheel_l" type="hinge" axis="0 1 0"/>
+            <geom type="cylinder" size="0.033 0.018" euler="1.5707963 0 0" rgba="0.2 0.2 0.2 1" mass="0.1" contype="0" conaffinity="0"/>
+          </body>
+          <body name="wheel_r" pos="0 -0.1435 0.033">
+            <joint name="wheel_r" type="hinge" axis="0 1 0"/>
+            <geom type="cylinder" size="0.033 0.018" euler="1.5707963 0 0" rgba="0.2 0.2 0.2 1" mass="0.1" contype="0" conaffinity="0"/>
+          </body>
 
-      <!-- LDS-01 LiDAR: N rays in the horizontal plane -->
-      <body name="lidar" pos="0 0 0.17">
-        <geom type="cylinder" size="0.035 0.02" rgba="0.3 0.3 0.3 1" mass="0.1" contype="0" conaffinity="0"/>
-      <site name="ray0" pos="0 0 0" zaxis="1.000000 0.000000 0" size="0.005"/>
+          <!-- LDS-01 LiDAR: N rays in the horizontal plane -->
+          <body name="lidar" pos="0 0 0.17">
+            <geom type="cylinder" size="0.035 0.02" rgba="0.3 0.3 0.3 1" mass="0.1" contype="0" conaffinity="0"/>
+          <site name="ray0" pos="0 0 0" zaxis="1.000000 0.000000 0" size="0.005"/>
       <site name="ray1" pos="0 0 0" zaxis="0.996195 0.087156 0" size="0.005"/>
       <site name="ray2" pos="0 0 0" zaxis="0.984808 0.173648 0" size="0.005"/>
       <site name="ray3" pos="0 0 0" zaxis="0.965926 0.258819 0" size="0.005"/>
@@ -139,36 +139,36 @@
       <site name="ray69" pos="0 0 0" zaxis="0.965926 -0.258819 0" size="0.005"/>
       <site name="ray70" pos="0 0 0" zaxis="0.984808 -0.173648 0" size="0.005"/>
       <site name="ray71" pos="0 0 0" zaxis="0.996195 -0.087156 0" size="0.005"/>
-      </body>
+          </body>
 
-      <!-- forward-looking camera: MuJoCo cameras look along -z with y up -->
-      <camera name="cam" pos="0.1 0.0 0.12" xyaxes="0 -1 0 0 0 1" fovy="48"/>
-    </body>
-  </worldbody>
+          <!-- forward-looking camera: MuJoCo cameras look along -z with y up -->
+          <camera name="cam" pos="0.1 0.0 0.12" xyaxes="0 -1 0 0 0 1" fovy="48"/>
+        </body>
+      </worldbody>
 
-  <keyframe>
-    <key name="start" qpos="-2.0 -1.5 0.0 0 0"/>
-  </keyframe>
+      <keyframe>
+        <key name="start" qpos="-2.0 -1.5 0.0 0 0"/>
+      </keyframe>
 
-  <actuator>
-    <!-- base velocity servos: ctrl = (vx, vy, yaw rate) in the WORLD frame, set by tb3sim.step() -->
-    <velocity name="act_x"   joint="base_x"   kv="200"/>
-    <velocity name="act_y"   joint="base_y"   kv="200"/>
-    <velocity name="act_yaw" joint="base_yaw" kv="20"/>
-    <!-- wheel servos so the encoders turn like a real robot's -->
-    <velocity name="act_l" joint="wheel_l" kv="2.0" ctrlrange="-30 30"/>
-    <velocity name="act_r" joint="wheel_r" kv="2.0" ctrlrange="-30 30"/>
-  </actuator>
+      <actuator>
+        <!-- base velocity servos: ctrl = (vx, vy, yaw rate) in the WORLD frame, set by tb3sim.step() -->
+        <velocity name="act_x"   joint="base_x"   kv="200"/>
+        <velocity name="act_y"   joint="base_y"   kv="200"/>
+        <velocity name="act_yaw" joint="base_yaw" kv="20"/>
+        <!-- wheel servos so the encoders turn like a real robot's -->
+        <velocity name="act_l" joint="wheel_l" kv="2.0" ctrlrange="-30 30"/>
+        <velocity name="act_r" joint="wheel_r" kv="2.0" ctrlrange="-30 30"/>
+      </actuator>
 
-  <sensor>
-    <!-- wheel encoders (what the real robot has) -->
-    <jointpos name="enc_l" joint="wheel_l"/>
-    <jointpos name="enc_r" joint="wheel_r"/>
-    <!-- ground truth: EVALUATION ONLY, never feed to the controller -->
-    <framepos  name="gt_pos" objtype="site" objname="base_site"/>
-    <framequat name="gt_quat" objtype="site" objname="base_site"/>
-    <framepos  name="marker_pos" objtype="site" objname="marker_site"/>
-    <rangefinder name="lidar0" site="ray0" cutoff="3.5"/>
+      <sensor>
+        <!-- wheel encoders (what the real robot has) -->
+        <jointpos name="enc_l" joint="wheel_l"/>
+        <jointpos name="enc_r" joint="wheel_r"/>
+        <!-- ground truth: EVALUATION ONLY, never feed to the controller -->
+        <framepos  name="gt_pos" objtype="site" objname="base_site"/>
+        <framequat name="gt_quat" objtype="site" objname="base_site"/>
+        <framepos  name="marker_pos" objtype="site" objname="marker_site"/>
+        <rangefinder name="lidar0" site="ray0" cutoff="3.5"/>
     <rangefinder name="lidar1" site="ray1" cutoff="3.5"/>
     <rangefinder name="lidar2" site="ray2" cutoff="3.5"/>
     <rangefinder name="lidar3" site="ray3" cutoff="3.5"/>
@@ -240,5 +240,6 @@
     <rangefinder name="lidar69" site="ray69" cutoff="3.5"/>
     <rangefinder name="lidar70" site="ray70" cutoff="3.5"/>
     <rangefinder name="lidar71" site="ray71" cutoff="3.5"/>
-  </sensor>
-</mujoco>
+      </sensor>
+    </mujoco>
+    
