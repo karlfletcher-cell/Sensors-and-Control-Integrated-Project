@@ -12,13 +12,13 @@ import numpy as np
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from p4_simulation.tb3sim import TB3Sim, wrap
-from p2_sensing.sensing import measure
+from p2_sensing.sensing import load_K, measure
 
 NUMBER_OF_POSES = 400
 
 random_generator = np.random.default_rng(0)     
 sim = TB3Sim()
-camera_matrix = sim.camera_intrinsics()
+camera_matrix = load_K(sim.camera_intrinsics())
 camera_pose_on_robot = sim.T_base_cam()
 marker_position = sim.marker_xy()                 # (2.6, 1.5), marker faces -x
 
