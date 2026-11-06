@@ -15,7 +15,7 @@ import atexit
 import os
 
 # LQR controller
-Ts = 0.1  # Must match the simulation control period
+Ts = 0.1  #must match the simulation control period
 
 Ad = np.array([
     [1, V * Ts],
@@ -41,7 +41,20 @@ Q_lqr = np.diag([
 
 R_lqr = np.array([[1 / 1.0**2]])
 
-K_lqr, _, _ = ct.dlqr(Ad, Bd, Q_lqr, R_lqr)
+
+def set_lqr_weights(Q=None, R=None):
+    global K_lqr
+
+    if Q is None:
+        Q = Q_lqr
+    if R is None:
+        R = R_lqr
+
+    K_lqr, _, _ = ct.dlqr(Ad, Bd, Q, R)
+    return K_lqr
+
+
+K_lqr = set_lqr_weights()
 
 print("LQR gain:", K_lqr)
 
@@ -58,7 +71,7 @@ def save_tracking_log():
 
 atexit.register(save_tracking_log)
 
-# Store tracking errors for plotting
+#store tracking errors
 tracking_log = {
     "lateral_error": [],
     "heading_error": [],
@@ -70,7 +83,7 @@ def controller(xh, wp, start=None):
 
     wp = np.array(wp, dtype=float)
 
-    # Save the start of a new path when no start is provided
+    #save the start of a new path when no start is given
     if start is None:
         if not hasattr(controller, "last_wp") or not np.array_equal(wp, controller.last_wp):
             controller.last_wp = wp.copy()
@@ -83,16 +96,16 @@ def controller(xh, wp, start=None):
 
     theta_ref = np.arctan2(dy, dx)
 
-    # Lateral and heading errors
+    #lateral and heading errors
     e_y = -(xh[0] - start[0]) * np.sin(theta_ref) + (xh[1] - start[1]) * np.cos(theta_ref)
     e_theta = wrap(xh[2] - theta_ref)
 
-    # Rotate on the spot for large heading errors
+    #rotate on the spot for large heading errors
     if abs(e_theta) > np.deg2rad(45):
         w = np.clip(-2.0 * e_theta, -1.0, 1.0)
         return 0.0, float(w)
 
-    # LQR state feedback
+    #LQR state feedback
     e = np.array([e_y, e_theta])
     w = -(K_lqr @ e).item()
 
@@ -139,11 +152,11 @@ def avoid_controller(xh, goal, scan, angles):
 
     look_ahead = min(SAFE_DIST, goal_dist)
 
-    # If the goal is behind the robot, turn around
+    #if the goal is behind the robot, turn around
     if abs(goal_angle) > np.pi / 2:
         return 0.0, float(np.clip(2.0 * goal_angle, -1.0, 1.0))
 
-    # Check whether the previous temporary path is still safe
+    #check whether the previous temporary path is still safe
     ref_wp = getattr(avoid_controller, "ref_wp", None)
     ref_start = getattr(avoid_controller, "ref_start", None)
 
@@ -157,7 +170,7 @@ def avoid_controller(xh, goal, scan, angles):
         if distance_ref < 0.18 or not path_is_clear(direction_ref, scan, angles, distance_ref):
             ref_wp = None
 
-    # Find a new path if necessary
+    #find a new path if necessary
     if ref_wp is None:
 
         best_angle = None
@@ -181,7 +194,7 @@ def avoid_controller(xh, goal, scan, angles):
             avoid_controller.ref_wp = None
             return 0.0, 0.8
 
-        # Convert the selected LiDAR direction to a world-frame waypoint
+        #convert the selected LiDAR direction to a world-frame waypoint
         heading = xh[2] + best_angle
 
         ref_start = np.array(xh[:2], dtype=float).copy()
@@ -194,7 +207,7 @@ def avoid_controller(xh, goal, scan, angles):
         avoid_controller.ref_wp = ref_wp
         avoid_controller.ref_start = ref_start
 
-    # Follow the selected path using LQR
+    #follow the selected path using LQR
     v, w = controller(xh, ref_wp, ref_start)
 
     return v, w
