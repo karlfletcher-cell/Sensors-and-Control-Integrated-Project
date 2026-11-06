@@ -11,7 +11,6 @@ Split by distance, under 0.75 m (54 readings) the range mean was -0.10 cm with a
 The five largest range errors were 0.51, 0.51, 0.54, 0.72 and 19.39 cm. The biggest was at 1.38 m, and without that one reading the range std is 0.13 cm. Taking the same pose twice gives an identical reading.
 
 ## Observations
-
 * Calibration removed the range bias. Before it, the camera over-read by 0.57 cm past 1.75 m. Now the mean error is within 0.10 cm in every distance group.
 * Range std without the outlier halved, from 0.27 cm to 0.13 cm.
 * Range error still grows with distance: std 0.02 cm under 0.75 m, 0.22 cm past 1.75 m.
