@@ -11,6 +11,8 @@ import numpy as np
 from p4_simulation.tb3sim import wrap
 from config import V, SAFE_DIST, HALF_WIDTH
 import control as ct
+import atexit
+import os
 
 # LQR controller
 Ts = 0.1  # Must match the simulation control period
@@ -25,6 +27,13 @@ Bd = np.array([
     [Ts]
 ])
 
+C = ct.ctrb(Ad, Bd)
+
+print("Controllability matrix:")
+print(C)
+
+print("Rank:", np.linalg.matrix_rank(C))
+
 Q_lqr = np.diag([
     1 / 0.2**2,
     1 / np.deg2rad(15)**2
@@ -35,6 +44,27 @@ R_lqr = np.array([[1 / 1.0**2]])
 K_lqr, _, _ = ct.dlqr(Ad, Bd, Q_lqr, R_lqr)
 
 print("LQR gain:", K_lqr)
+
+def save_tracking_log():
+    if len(tracking_log["lateral_error"]) == 0:
+        return
+
+    os.makedirs("analysis", exist_ok=True)
+
+    np.savez(
+        "analysis/p1_tracking_log.npz",
+        **tracking_log
+    )
+
+atexit.register(save_tracking_log)
+
+# Store tracking errors for plotting
+tracking_log = {
+    "lateral_error": [],
+    "heading_error": [],
+    "angular_velocity": [],
+    "linear_velocity": []
+}
 
 def controller(xh, wp, start=None):
 
@@ -67,6 +97,11 @@ def controller(xh, wp, start=None):
     w = -(K_lqr @ e).item()
 
     w = np.clip(w, -1.0, 1.0)
+
+    tracking_log["lateral_error"].append(e_y)
+    tracking_log["heading_error"].append(e_theta)
+    tracking_log["angular_velocity"].append(float(w))
+    tracking_log["linear_velocity"].append(V)
 
     return V, float(w)
 
