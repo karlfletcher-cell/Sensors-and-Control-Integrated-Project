@@ -16,12 +16,12 @@ No screen/GPU? Prefix commands with `MUJOCO_GL=egl` (NVIDIA) or `MUJOCO_GL=osmes
 
 ## Who does what
 
-| Person | Job | Code |
-|---|---|---|
-| **P1** | Controller (LQR) | `controller()` in `p1_control/controller.py` |
-| **P2** | Sensing — camera calibration, noise `Rn`, marker lost | `measure()` in `p2_sensing/sensing.py` |
-| **P3** | EKF — tune `Qd`, `Rn`, log `P` | `p3_estimation/`, called from the `ekf_*` TODOs in `main.py` |
-| **P4** | Scene, main loop, trials, plots | `p4_simulation/`, `main.py` |
+| Person | Name | Job | Code |
+|---|---|---|---|
+| **P1** | Jason | Controller (LQR) | `controller()` in `p1_control/controller.py` |
+| **P2** | Senith | Sensing — camera calibration, noise `Rn`, marker lost | `measure()` in `p2_sensing/sensing.py` |
+| **P3** | Karl | EKF — tune `Qd`, `Rn`, log `P` | `p3_estimation/`, called from the `ekf_*` TODOs in `main.py` |
+| **P4** | Alexis | Scene, main loop, trials, plots | `p4_simulation/`, `main.py` |
 
 ## Using the simulator
 
@@ -49,3 +49,10 @@ x_true = sim.true_pose()              # GROUND TRUTH — plots/evaluation only
 - Marker: ArUco `DICT_4X4_50`, id 0, 0.20 m, at (2.6, 1.5) facing −x.
 - Robot: Waffle — wheel radius 0.033 m, separation 0.287 m.
 - Don't hand-edit `tb3_scene.xml`; change `make_scene.py` and re-run it.
+
+## AI declaration
+
+All group members used Claude to create the project template: the P1, P2, P3 and P4 folder structure, with basic starter files in each to keep us on track. We also used it to clarify and explain topics we did not fully understand, such as how the EKF works.
+
+## Youtube Link
+

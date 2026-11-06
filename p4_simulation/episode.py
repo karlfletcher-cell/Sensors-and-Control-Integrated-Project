@@ -59,11 +59,18 @@ def run_episode(seed=0, start=config.ROBOT_START, init_offset=config.INIT_OFFSET
         from p4_simulation.camera_view import CameraPOV
         pov = CameraPOV(show=camera_pov, record=record_pov, fps=int(round(1 / config.DT)))
     vw = None
+    paused = [False]
     if viewer:
         import mujoco.viewer
-        vw = mujoco.viewer.launch_passive(sim.model, sim.data)
+        def on_key(keycode):
+            if keycode == 32:      # Space: the passive viewer does not pause this loop by itself
+                paused[0] = not paused[0]
+        vw = mujoco.viewer.launch_passive(sim.model, sim.data, key_callback=on_key)
 
     for k in range(max_steps):
+        while vw is not None and paused[0] and vw.is_running():
+            vw.sync(); time.sleep(0.05)
+
         # ---- disturbances (trial conditions only; nominal runs have none)
         if push_at is not None and k == push_at:
             sim.push(*push)
