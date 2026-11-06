@@ -1,4 +1,9 @@
+"""
+Characterise.py: sensor tests and P2 figures. Owner: P2. Run: python -m p2_sensing.Characterise
 
+Measures noise and detection rate, runs a closed-loop test and draws the frame diagram.
+Run Calibrate.py first. Ground truth is used for evaluation only. Writes to results/.
+"""
 import csv
 import json
 import os

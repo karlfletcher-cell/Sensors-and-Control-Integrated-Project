@@ -1,3 +1,11 @@
+"""
+Calibrate.py: offline camera calibration. Owner: P2. Run: python -m p2_sensing.Calibrate
+
+Renders checkerboard views, calibrates with CentralCamera.images2C (Week 3 Part B), checks
+reprojection error (Week 3 Part C) and fits the remaining range bias (Week 2 Part B.3).
+The bias fit uses ground truth offline only. Writes camera_calib.json and calib_images/.
+"""
+
 import glob
 import json
 import os

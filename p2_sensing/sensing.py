@@ -1,4 +1,11 @@
+"""
+sensing.py: ArUco marker detection -> (range, bearing) in the base frame. Owner: P2.
 
+Input: RGB image, camera matrix K, camera pose in the base frame T_bc.
+Output: np.array([range, bearing]), or None if marker 0 is not visible.
+Never reads ground truth. Calibration values come from camera_calib.json, made by Calibrate.py.
+Adapted from Week 3 Part E and Week 2 Part C. Calls OpenCV directly to use sub-pixel corners.
+"""
 import json
 import os
 
