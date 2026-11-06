@@ -15,7 +15,7 @@ SEEDS = range(10)
 # label: (x and y noise per step in metres, heading noise per step in degrees)
 QD_OPTIONS = {
     "0.4 mm, 0.17 deg (measured)": (0.0004, 0.17),
-    "2 mm, 0.3 deg (config.py)": (0.002, 0.3),
+    "5 mm, 0.5 deg (config.py)": (0.005, 0.5),
 }
 START_ERRORS = {"start error": config.INIT_OFFSET, "no start error": np.zeros(3)}
 

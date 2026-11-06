@@ -53,17 +53,17 @@ This table is from before calibration and uses the old Qd guess of 20 mm, 1.5 de
 
 ## Measurement
 
-Run with `python -m p3_estimation.measure_qd`. The encoders report the commanded wheel speeds, but the body moves with slipped wheel speeds, so this measures the error the predict step can't see. Not re-run since P1's controller change, so the "real commands" rows may have moved.
+Run with `python -m p3_estimation.measure_qd`. The encoders report the commanded wheel speeds, but the body moves with slipped wheel speeds, so this measures the error the predict step can't see.
 
 ```
 slip_std = 0.02, step time = 0.1 s
 std per step (largest single step in brackets)
 slip 0.02  smooth turn    n=960   along 0.26 mm (0.96)   across 0.08 mm (0.14)   heading 0.115 deg (0.427)
 slip 0.02  sudden turn    n=960   along 0.26 mm (0.92)   across 0.07 mm (0.14)   heading 0.117 deg (0.344)
-slip 0.02  real commands  n=266   along 0.28 mm (2.09)   across 0.05 mm (0.22)   heading 0.108 deg (0.349)
+slip 0.02  real commands  n=270   along 0.31 mm (1.90)   across 0.06 mm (0.24)   heading 0.109 deg (0.341)
 slip 0.00  smooth turn    n=960   along 0.00 mm (0.00)   across 0.07 mm (0.11)   heading 0.002 deg (0.004)
 slip 0.00  sudden turn    n=960   along 0.00 mm (0.00)   across 0.07 mm (0.12)   heading 0.029 deg (0.069)
-slip 0.00  real commands  n=266   along 0.12 mm (1.89)   across 0.05 mm (0.21)   heading 0.008 deg (0.071)
+slip 0.00  real commands  n=270   along 0.20 mm (1.90)   across 0.06 mm (0.23)   heading 0.012 deg (0.092)
 old Qd guess assumed:   20.00 mm (x, y)   1.500 deg (heading)
 ```
 
@@ -73,15 +73,16 @@ old Qd guess assumed:   20.00 mm (x, y)   1.500 deg (heading)
 * The result matches a hand calculation from 2% slip at 0.2 m/s: along 0.1 × 0.2 × 0.02 / √2 = 0.28 mm, heading 0.1 × √2 × 0.2 × 0.02 / 0.287 = 0.113°.
 * Errors are measured along and across the robot, because world x and y only line up with it when it faces along x.
 * The first step after each reset is skipped. The robot starts from rest and moves about 2 mm less than the encoders report, even with slip off. That is start-up lag, not slip.
-* Sudden command changes don't explain the margin in Qd. With slip on, the real controller's commands give about the same std as smooth driving (0.28 mm, 0.108°). The lag only shows up as rare single-step spikes of about 2 mm, and Qd describes the typical spread, not the largest step.
+* Sudden command changes don't explain the margin in Qd. With slip on, the real controller's commands give about the same std as smooth driving (0.31 mm, 0.109°). The lag only shows up as rare single-step spikes of about 2 mm, and Qd describes the typical spread, not the largest step.
 
 ## Chosen value
 
-Qd = diag([0.002², 0.002², (0.3°)²])
+Qd = diag([0.005², 0.005², (0.5°)²])
 
 * x and y use the same value because the robot drives in every direction.
-* I chose this before calibration. Back then, the measured std with a 1.5x margin (0.4 mm, 0.17 deg) made runs worse, so I raised it to the smallest tested value that didn't: 2 mm, 0.3 deg. That is about 7.7x the along-track std and 2.6x the heading std.
-* With calibration that reason no longer holds: the measured value is not worse than 2 mm, 0.3 deg (see below). This value is still in `config.py`, but it needs choosing again (see "To do").
+* That is about 16x the measured along-track std (0.31 mm) and 4.6x the heading std (0.109 deg) from real commands, so wheel slip alone does not justify it.
+* I chose it on consistency, not accuracy. Over 30 seeds its rms error can't be separated from 2 mm, 0.3 deg, but its NEES is much closer to ideal (see below). The margin covers the camera's repeating errors, which the EKF doesn't model.
+* Before calibration I used 2 mm, 0.3 deg, because the measured value made runs worse. The results below replace that choice.
 
 ## Before / after
 
@@ -95,45 +96,56 @@ Run with `python -m p3_estimation.compare_qd` (headless, EKF on, seeds 0-9, Rn 2
 ```
 
 * The old guess is now clearly the worst: one failed run and a much larger spread across seeds.
-* 5 mm, 0.5 deg has the lowest rms error and final error, and the only 100% inside 2-sigma. The gap to the other two (about 1-2 cm rms) is about the size of the spread across seeds (about 2 cm), so 10 seeds don't settle it.
+* 5 mm, 0.5 deg has the lowest rms error and final error, and the only 100% inside 2-sigma. The gap to the other two (about 1-2 cm rms) is about the size of the spread across seeds (about 2 cm), so 10 seeds don't settle it. The 30-seed run below checks this.
 * The measured value no longer does worse than 2 mm, 0.3 deg, which reverses the result from before calibration.
 * The inside 2-sigma figure is the worst of x, y and heading for each run, averaged over seeds.
 * Before calibration, 2 mm, 0.3 deg showed 100% here. Now it shows 92%, and nearly all of that drop is from one seed. Eight seeds are still at 100%, seed 4 is at 90% and seed 5 is at 27%.
 
-## Why Qd needs a margin
+Re-run over seeds 0-29 with a temporary script, not committed. NEES is for after 10 s, taken as the mean per seed. Same episode and Rn as above.
 
-These results are from before calibration and haven't been re-run. The comparison above suggests the conclusion below may no longer hold.
+```
+5 mm, 0.5 deg      success 29/30  final  5.87 cm  rms 20.72 cm (std  7.37)  inside 2-sigma 93%  final 0.95 sigma  mean NEES   4.93  under limit 86.4%
+2 mm, 0.3 deg      success 29/30  final  5.50 cm  rms 22.67 cm (std 17.04)  inside 2-sigma 94%  final 1.38 sigma  mean NEES  16.91  under limit 82.3%
+0.4 mm, 0.17 deg   success 28/30  final 10.30 cm  rms 23.95 cm (std 23.32)  inside 2-sigma 85%  final 2.54 sigma  mean NEES 150.23  under limit 33.4%
+```
+
+* Rms error doesn't separate 5 mm from 2 mm. The paired difference is -1.95 cm with a standard error of 3.46 cm, and 5 mm is lower on only 16 of 30 seeds.
+* Consistency does separate them. 5 mm has about a third of the mean NEES of 2 mm, and its final error is 0.95 sigma, against 1.38.
+* The measured value is clearly the worst on 30 seeds: 33.4% under the limit and mean NEES 150.
+* The first 10 seeds flatter 5 mm, 0.5 deg. Its rms error goes from 17.79 cm to 20.72 cm with 30 seeds, because seeds 23 and 24 are poor (see step 3).
+
+## Why Qd needs a margin
 
 Run with `python -m p3_estimation.explain_qd`. The perfect camera runs feed ground truth into the EKF, only for this test, to remove the camera's error.
 
 ```
-real camera     start error     0.4 mm, 0.17 deg (measured)  success 10/10   final error  5.09 cm   rms error 20.99 cm (std 2.51 cm)
-real camera     start error     2 mm, 0.3 deg (config.py)    success 10/10   final error  4.44 cm   rms error 19.90 cm (std 0.87 cm)
-real camera     no start error  0.4 mm, 0.17 deg (measured)  success 10/10   final error  1.23 cm   rms error  4.86 cm (std 1.78 cm)
-real camera     no start error  2 mm, 0.3 deg (config.py)    success 10/10   final error  0.46 cm   rms error  3.64 cm (std 0.73 cm)
-perfect camera  start error     0.4 mm, 0.17 deg (measured)  success 10/10   final error  4.59 cm   rms error 20.02 cm (std 0.63 cm)
-perfect camera  start error     2 mm, 0.3 deg (config.py)    success 10/10   final error  4.48 cm   rms error 19.99 cm (std 0.53 cm)
-perfect camera  no start error  0.4 mm, 0.17 deg (measured)  success 10/10   final error  0.32 cm   rms error  0.70 cm (std 0.38 cm)
-perfect camera  no start error  2 mm, 0.3 deg (config.py)    success 10/10   final error  0.18 cm   rms error  0.68 cm (std 0.40 cm)
+real camera     start error     0.4 mm, 0.17 deg (measured)  success 10/10   final error  3.74 cm   rms error 18.70 cm (std 2.51 cm)
+real camera     start error     5 mm, 0.5 deg (config.py)    success 10/10   final error  3.26 cm   rms error 17.79 cm (std 1.85 cm)
+real camera     no start error  0.4 mm, 0.17 deg (measured)  success 10/10   final error  0.68 cm   rms error  3.11 cm (std 0.95 cm)
+real camera     no start error  5 mm, 0.5 deg (config.py)    success 10/10   final error  0.35 cm   rms error  2.14 cm (std 0.45 cm)
+perfect camera  start error     0.4 mm, 0.17 deg (measured)  success 10/10   final error  4.65 cm   rms error 20.10 cm (std 0.61 cm)
+perfect camera  start error     5 mm, 0.5 deg (config.py)    success 10/10   final error  4.54 cm   rms error 20.02 cm (std 0.55 cm)
+perfect camera  no start error  0.4 mm, 0.17 deg (measured)  success 10/10   final error  0.32 cm   rms error  0.76 cm (std 0.28 cm)
+perfect camera  no start error  5 mm, 0.5 deg (config.py)    success 10/10   final error  0.18 cm   rms error  0.69 cm (std 0.27 cm)
 ```
 
-* With a perfect camera, the measured Qd does as well as 2 mm, 0.3° (rms 20.02 vs 19.99 cm, and 0.70 vs 0.68 cm with no start error). So wheel slip alone doesn't need the margin.
-* With the real camera, the measured Qd is worse even with no start error (rms 4.86 vs 3.64 cm, spread 1.78 vs 0.73 cm). So the start error isn't the cause either. It is the camera's error.
+* With a perfect camera, the measured Qd does about as well as 5 mm, 0.5° (rms 20.10 vs 20.02 cm, and 0.76 vs 0.69 cm with no start error). So wheel slip alone doesn't need the margin.
+* With the real camera, the measured Qd is worse even with no start error (rms 3.11 vs 2.14 cm, spread 0.95 vs 0.45 cm). So the start error isn't the cause either. It is the camera's error.
 * Likely reason: step 1 showed camera errors repeat for a given pose, so they don't average out the way the EKF assumes. A larger Qd stops the filter locking onto them. This last part is my reading of the results, not something I measured directly.
-* The start error also explains why rms error barely changes with Qd: rms is about 20 cm with it and under 5 cm without it, whichever Qd is used.
+* The start error also explains why rms error barely changes with Qd: rms is about 18-20 cm with it and about 3 cm or less without it, whichever Qd is used.
 
 ## Rn re-check with the new Qd
 
-Run with `python -m p3_estimation.compare_rn` with Qd at 2 mm, 0.3 deg in `config.py`, with calibration.
+Run with `python -m p3_estimation.compare_rn` with Qd at 5 mm, 0.5 deg in `config.py`, with calibration.
 
 ```
-10 cm, 3 deg (old guess)    success 10/10   final error 4.68 cm   rms error 20.52 cm (std 0.42 cm)   rms lower than old guess on 0 seeds
-2 cm, 0.5 deg (config.py)   success 10/10   final error 4.12 cm   rms error 19.77 cm (std 2.35 cm)   rms lower than old guess on 7 seeds
-1 cm, 0.5 deg               success 9/10   final error 4.58 cm   rms error 19.28 cm (std 6.63 cm)   rms lower than old guess on 8 seeds
+10 cm, 3 deg (old guess)    success 10/10   final error 4.58 cm   rms error 20.34 cm (std 0.48 cm)   rms lower than old guess on 0 seeds
+2 cm, 0.5 deg (config.py)   success 10/10   final error 3.26 cm   rms error 17.79 cm (std 1.85 cm)   rms lower than old guess on 10 seeds
+1 cm, 0.5 deg               success 10/10   final error 3.52 cm   rms error 18.88 cm (std 4.71 cm)   rms lower than old guess on 7 seeds
 ```
 
-* The measured Rn beats the old guess on 7 of 10 seeds, with a lower mean rms error, but its spread across seeds is larger (2.35 vs 0.42 cm).
-* 1 cm has a slightly lower mean rms error, but it lost a run and has nearly 3x the spread of 2 cm. Rn stays at 2 cm, 0.5 deg.
+* The measured Rn beats the old guess on all 10 seeds, with a lower mean rms and final error, but its spread across seeds is larger (1.85 vs 0.48 cm).
+* 1 cm is worse than 2 cm on mean rms error, final error and spread (about 2.5x). Rn stays at 2 cm, 0.5 deg.
 
 ## Limitations
 
@@ -141,32 +153,41 @@ Run with `python -m p3_estimation.compare_rn` with Qd at 2 mm, 0.3 deg in `confi
 
 # Step 3: Consistency check
 
-Run with `python -m p3_estimation.check_consistency` (headless, EKF on, seeds 0-9, Rn 2 cm, 0.5 deg, Qd 2 mm, 0.3 deg, with calibration). NEES compares the real estimate error with `P`, so it needs ground truth, used here for scoring only. NIS compares the innovation with `S`. If the filter is consistent, about 95% of steps fall under the limit (7.815 for NEES, 5.991 for NIS).
+Run with `python -m p3_estimation.check_consistency` (headless, EKF on, seeds 0-9, Rn 2 cm, 0.5 deg, Qd 5 mm, 0.5 deg, with calibration). NEES compares the real estimate error with `P`, so it needs ground truth, used here for scoring only. NIS compares the innovation with `S`. If the filter is consistent, about 95% of steps fall under the limit (7.815 for NEES, 5.991 for NIS).
 
 ```
 success 10/10
 Whole run:
-  NEES: mean  12.50 (ideal 3)   median  1.99   under 95% limit  76.1%
-  NIS : mean   1.00 (ideal 2)   median  0.09   under 95% limit  95.7%
+  NEES: mean   5.59 (ideal 3)   median  1.53   under 95% limit  82.6%
+  NIS : mean   0.82 (ideal 2)   median  0.05   under 95% limit  96.0%
 After 10 s:
-  NEES: mean   7.14 (ideal 3)   median  2.17   under 95% limit  83.7%
-  NIS : mean   0.59 (ideal 2)   median  0.07   under 95% limit  98.1%
+  NEES: mean   2.41 (ideal 3)   median  0.99   under 95% limit  92.4%
+  NIS : mean   0.37 (ideal 2)   median  0.04   under 95% limit  98.4%
 ```
 
 ## Observations
 
-* NEES is too high, so the filter is overconfident: its real error is larger than `P` says.
-* Calibration helped a lot. With the same code but calibration turned off for one temporary run (uncalibrated K, no range correction), success was 9/10, mean NEES 30.03 and 47.7% of steps under the limit. With calibration those are 10/10, 12.50 and 76.1%.
-* The mean is pulled up by short spikes: the median is about 2, but the peak on each seed is between 47 and 166. Most steps over the limit fall between about 7 s and 12.5 s. I haven't worked out why they cluster there.
+* After 10 s, NEES is close to consistent on these seeds: mean 2.41, with 92.4% of steps under the limit. The old Qd of 2 mm, 0.3 deg gave a mean of 7.14 and 83.7%.
+* Over the whole run NEES is still high (mean 5.59, 82.6%), because of short spikes early on. The median is 1.53, but the peak on each seed is between 36 and 104.
+* The spikes come with the first camera readings. On seeds 0-9 the marker is first seen at 5.5-6.7 s, 80% of the steps over the limit fall between 6.5 s and 10.8 s, and 73% are before 10 s. The timing suggests the error from the deliberate start offset is being measured against a `P` that has just shrunk, but I haven't tested that directly.
+* Calibration helped a lot. With Qd 2 mm, 0.3 deg and calibration turned off for one temporary run (uncalibrated K, no range correction), success was 9/10, mean NEES 30.03 and 47.7% of steps under the limit. With calibration those were 10/10, 12.50 and 76.1%.
 * NIS is low, so `Rn` is cautious compared with the camera's typical error. That matches step 1, where I set range noise well above the std without the outlier.
+
+## Seeds 10-29
+
+Seeds 0-9 look better than the wider picture. A temporary script ran seeds 0-29 with these settings, and mean NEES after 10 s rises to 4.93, with 86.4% under the limit.
+
+* Seed 5, which was at 27% inside 2-sigma with the old Qd, is now at 100%.
+* 26 of 30 seeds are at 99% or better inside 2-sigma. Seeds 17 and 18 are at 82-83%. Seed 23 is at 26% with a peak NEES of 359, though it still docks.
+* Seed 24 fails. It collides, sees the marker on only 5% of steps, runs until timeout (about 80 s) and ends 58.5 cm off (3.1 sigma). The diagnosis column blames the controller. I haven't checked whether a bad estimate caused the collision.
 
 ## Why the 2-sigma check missed this
 
-The per-state 2-sigma check was at 100% before calibration, and most seeds still are, yet NEES shows a problem. The check looks at x, y and heading one at a time, so it can't see how their errors are linked. `P` has strong x-y correlation (median |correlation| 0.98). An error in a direction `P` considers unlikely can pass the check on both x and y and still give a large NEES. Of the 653 steps over the NEES limit, 532 (81%) had all three states inside 2-sigma.
+Every one of seeds 0-9 is at 100% on the per-state 2-sigma check, yet NEES still spikes. The check looks at x, y and heading one at a time, so it can't see how their errors are linked. `P` has strong x-y correlation (median |correlation| 0.97). An error in a direction `P` considers unlikely can pass the check on both x and y and still give a large NEES. On seeds 0-9, 473 of the 474 steps over the NEES limit had all three states inside 2-sigma. Over seeds 0-29 it is 1248 of 2241 (56%), because seeds 23 and 24 have real errors outside 2-sigma.
 
 ## Using fewer camera updates
 
-Camera errors repeat for a given pose, so I tested using only some of the readings to make them less correlated. This used a temporary wrapper around `ekf_update`, not committed. Results are for after 10 s, all 10/10 success.
+Camera errors repeat for a given pose, so I tested using only some of the readings to make them less correlated. This used a temporary wrapper around `ekf_update`, not committed, with Qd 2 mm, 0.3 deg. It hasn't been re-run with 5 mm, 0.5 deg. Results are for after 10 s, all 10/10 success.
 
 | Camera updates used | Mean NEES | Under limit | Mean position error |
 |---|---|---|---|
@@ -183,7 +204,5 @@ Camera errors repeat for a given pose, so I tested using only some of the readin
 
 ## To do
 
-* Choose Qd again now that calibration is in. 5 mm, 0.5 deg looks best so far, but more seeds are needed to confirm it. Then re-run `check_consistency.py` and `compare_rn.py`.
-* Re-run `explain_qd.py` (about 10 minutes) and `measure_qd.py`, and update those numbers.
-* Find out what happens on seed 5, which has only 27% of steps inside 2-sigma.
+* Find out why seed 24 collides and why seed 23 has such a large NEES.
 * Check Rn and Qd with `run_trials.py`.
