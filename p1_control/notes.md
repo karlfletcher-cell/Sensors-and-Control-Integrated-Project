@@ -4,6 +4,7 @@ The TurtleBot3 uses a differential drive system, allowing it to move forward and
 
 To design the LQR controller, we linearised the model around a straight reference path using two errors. Lateral error (e_y) and heading error (e_theta). The model assumes constant forward speed, small heading errors and minimal wheel slip.
 
+
 The model was discretised using a time step of 0.1 seconds. Controllability analysis showed that both tracking errors can be controlled through angular velocity when the robot is moving forward (V ≠ 0), as the controllability matrix has a rank of 2.
 
 Controller Design
