@@ -4,7 +4,7 @@ __pycache__/
 .venv/
 
 # run outputs
-run_log.npz
+run_log*.npz
 
 # generated plots (assets/aruco_0.png is generated too, but the scene XML needs it, so it stays tracked)
 test_drive.png
