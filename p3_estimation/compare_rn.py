@@ -18,7 +18,8 @@ SEEDS = range(10)
 # label: (range noise in metres, bearing noise in degrees)
 RN_OPTIONS = {
     "10 cm, 3 deg (old guess)": (0.10, 3.0),
-    "2 cm, 0.5 deg (config.py)": (0.02, 0.5),
+    "6 cm, 0.5 deg (config.py)": (0.06, 0.5),
+    "2 cm, 0.5 deg": (0.02, 0.5),
     "1 cm, 0.5 deg": (0.01, 0.5),
 }
 

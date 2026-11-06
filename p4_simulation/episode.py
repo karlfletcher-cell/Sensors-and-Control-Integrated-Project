@@ -38,6 +38,10 @@ def run_episode(seed=0, start=config.ROBOT_START, init_offset=config.INIT_OFFSET
     blackout       (start_step, end_step): the marker is invisible during these steps
     viewer / camera_pov / record_pov   3D window / camera-POV window / .mp4 path for the POV
     """
+    # the avoidance waypoint is kept on the function, so clear it or this run follows the last run's
+    avoid_controller.ref_wp = None
+    avoid_controller.ref_start = None
+
     sim = TB3Sim(xml=scene_path(obstacles), dt=config.DT, slip_std=slip_std,
                  enc_noise_std=enc_noise_std, seed=seed)
     MARKER = sim.marker_xy()

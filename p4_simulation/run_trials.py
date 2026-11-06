@@ -54,7 +54,7 @@ if "--only" in args:
 os.makedirs("analysis", exist_ok=True)
 rows = []
 if "--only" in args and os.path.exists("analysis/trials.csv"):      # keep earlier results for other conditions
-    rows = [r for r in csv.DictReader(open("analysis/trials.csv")) if r["condition"] not in CONDITIONS]
+    rows = [r for r in csv.DictReader(open("analysis/trials.csv", encoding="utf-8")) if r["condition"] not in CONDITIONS]
     for r in rows:
         for k_ in r:
             if k_ not in ("condition", "diagnosis"):
@@ -72,7 +72,7 @@ for name, kw in CONDITIONS.items():
         print(f"  seed {seed}: {'ok  ' if r['success'] else 'FAIL'} t={r['time_to_dock']:5.1f}s "
               f"final {r['final_pos_err']:.3f} m   {r['diagnosis'] if not r['success'] else ''}")
 
-with open("analysis/trials.csv", "w", newline="") as f:
+with open("analysis/trials.csv", "w", newline="", encoding="utf-8") as f:
     w = csv.DictWriter(f, fieldnames=rows[0].keys()); w.writeheader(); w.writerows(rows)
 
 hdr = ("| condition | success | time to dock (s) | final err (m) mean ± sd | RMS err (m) | inside ±2σ x/y/θ (%) | failures |\n"
@@ -91,7 +91,7 @@ for name in dict.fromkeys(r["condition"] for r in rows):
     dtxt = "; ".join(f"{n}× {d}" for d, n in diags.items()) or "—"
     lines.append(f"| {name} | {len(ok)}/{len(rs)} | {np.nanmean(tt):.1f} | {fe.mean():.3f} ± {fe.std():.3f} | "
                  f"{rm.mean():.3f} | {c[0]:.0f}/{c[1]:.0f}/{c[2]:.0f} | {dtxt} |")
-with open("analysis/trials_summary.md", "w") as f:
+with open("analysis/trials_summary.md", "w", encoding="utf-8") as f:
     f.write(f"Trials: {N_SEEDS} seeds per condition (seeds 0..{N_SEEDS-1}). Time to dock averaged over successful runs.\n\n" + hdr + "\n".join(lines) + "\n")
 print("\n" + hdr + "\n".join(lines))
 print("\nwrote analysis/trials.csv and analysis/trials_summary.md")
