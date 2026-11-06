@@ -13,7 +13,7 @@ import numpy as np
 from p4_simulation.tb3sim import TB3Sim, wrap
 from p4_simulation.make_scene import scene_path
 from p1_control.controller import avoid_controller, dock_command
-from p2_sensing.sensing import measure
+from p2_sensing.sensing import load_K, measure
 from p3_estimation.Estimation import (odometry_to_input, motion_model, motion_jacobian,
                                      predict_range_bearing, measurement_jacobian,
                                      range_bearing_residual, ekf_predict, ekf_update)
@@ -41,7 +41,7 @@ def run_episode(seed=0, start=config.ROBOT_START, init_offset=config.INIT_OFFSET
     sim = TB3Sim(xml=scene_path(obstacles), dt=config.DT, slip_std=slip_std,
                  enc_noise_std=enc_noise_std, seed=seed)
     MARKER = sim.marker_xy()
-    K_cam, T_bc = sim.camera_intrinsics(), sim.T_base_cam()
+    K_cam, T_bc = load_K(sim.camera_intrinsics()), sim.T_base_cam()
     sim.reset(pose=start)
     sim.hide_marker(False)
 

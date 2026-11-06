@@ -1,0 +1,927 @@
+{
+ "sigma_px": 0.11638595251111607,
+ "noise_original": [
+  {
+   "distance_m": 0.5,
+   "n_detected": 50,
+   "range_bias_m": 5.9608575264750165e-05,
+   "range_std_m": 0.00037638945679078465,
+   "range_max_abs_m": 0.0007267925520267893,
+   "bearing_bias_deg": 0.04427433415068627,
+   "bearing_std_deg": 0.023248592786283856
+  },
+  {
+   "distance_m": 0.75,
+   "n_detected": 50,
+   "range_bias_m": 0.0017187974143616724,
+   "range_std_m": 0.001045063201750341,
+   "range_max_abs_m": 0.004148847908264863,
+   "bearing_bias_deg": 0.0515138465303038,
+   "bearing_std_deg": 0.028608139851748666
+  },
+  {
+   "distance_m": 1.0,
+   "n_detected": 50,
+   "range_bias_m": 0.004833943570278363,
+   "range_std_m": 0.0017041757588976702,
+   "range_max_abs_m": 0.008456667798361961,
+   "bearing_bias_deg": 0.048897411281869585,
+   "bearing_std_deg": 0.028164482602331134
+  },
+  {
+   "distance_m": 1.5,
+   "n_detected": 50,
+   "range_bias_m": 0.008312270027692924,
+   "range_std_m": 0.00535532132653836,
+   "range_max_abs_m": 0.02220148469898353,
+   "bearing_bias_deg": 0.05005515601465836,
+   "bearing_std_deg": 0.02505450494585345
+  },
+  {
+   "distance_m": 2.0,
+   "n_detected": 50,
+   "range_bias_m": 0.006998403332441252,
+   "range_std_m": 0.010570960947336583,
+   "range_max_abs_m": 0.042958702455023534,
+   "bearing_bias_deg": 0.052273108942733335,
+   "bearing_std_deg": 0.023025102494620246
+  },
+  {
+   "distance_m": 2.5,
+   "n_detected": 50,
+   "range_bias_m": -0.0255457032381974,
+   "range_std_m": 0.11842320685493504,
+   "range_max_abs_m": 0.48813075809258244,
+   "bearing_bias_deg": 0.0534891598860981,
+   "bearing_std_deg": 0.025658114536515255
+  },
+  {
+   "distance_m": 3.0,
+   "n_detected": 50,
+   "range_bias_m": 0.01629242293379962,
+   "range_std_m": 0.01085024928694576,
+   "range_max_abs_m": 0.03731336374609473,
+   "bearing_bias_deg": 0.05199324737999681,
+   "bearing_std_deg": 0.018674303122269306
+  },
+  {
+   "distance_m": 3.5,
+   "n_detected": 50,
+   "range_bias_m": 0.0688575209397301,
+   "range_std_m": 0.030539866726385746,
+   "range_max_abs_m": 0.09553638889164873,
+   "bearing_bias_deg": 0.05206901155838037,
+   "bearing_std_deg": 0.025416267226700366
+  },
+  {
+   "distance_m": 4.0,
+   "n_detected": 50,
+   "range_bias_m": 0.06310265349247521,
+   "range_std_m": 0.05410057926846392,
+   "range_max_abs_m": 0.11225839371887014,
+   "bearing_bias_deg": 0.054436766946131414,
+   "bearing_std_deg": 0.02403124133744071
+  },
+  {
+   "distance_m": 4.5,
+   "n_detected": 50,
+   "range_bias_m": 0.12728097708165145,
+   "range_std_m": 0.0760090291827736,
+   "range_max_abs_m": 0.2995500846797352,
+   "bearing_bias_deg": 0.05335181049483403,
+   "bearing_std_deg": 0.023417193868790324
+  },
+  {
+   "distance_m": 5.0,
+   "n_detected": 50,
+   "range_bias_m": 0.14592092699005954,
+   "range_std_m": 0.11127107690198612,
+   "range_max_abs_m": 0.25443037572027993,
+   "bearing_bias_deg": 0.053185285577511336,
+   "bearing_std_deg": 0.013800225370369859
+  }
+ ],
+ "noise_final": [
+  {
+   "distance_m": 0.5,
+   "n_detected": 50,
+   "range_bias_m": -0.0011502100046871788,
+   "range_std_m": 0.00011134869366236316,
+   "range_max_abs_m": 0.0013901292975042612,
+   "bearing_bias_deg": -0.016807525151665215,
+   "bearing_std_deg": 0.0532459532068943
+  },
+  {
+   "distance_m": 0.75,
+   "n_detected": 50,
+   "range_bias_m": -0.001440305137286646,
+   "range_std_m": 0.00036086346207792275,
+   "range_max_abs_m": 0.0020503967019105396,
+   "bearing_bias_deg": -0.014507809546426649,
+   "bearing_std_deg": 0.0288058452698557
+  },
+  {
+   "distance_m": 1.0,
+   "n_detected": 50,
+   "range_bias_m": -0.0013102283157624428,
+   "range_std_m": 0.000653691709098312,
+   "range_max_abs_m": 0.0024047753028031416,
+   "bearing_bias_deg": -0.017217075793005826,
+   "bearing_std_deg": 0.016612654778952723
+  },
+  {
+   "distance_m": 1.5,
+   "n_detected": 50,
+   "range_bias_m": -0.0016753777379401535,
+   "range_std_m": 0.0002744214817857023,
+   "range_max_abs_m": 0.0021617326773457624,
+   "bearing_bias_deg": -0.020632353516423972,
+   "bearing_std_deg": 0.00629019210644114
+  },
+  {
+   "distance_m": 2.0,
+   "n_detected": 50,
+   "range_bias_m": -0.0018697649830881514,
+   "range_std_m": 0.0020076056368004747,
+   "range_max_abs_m": 0.0050064692860578575,
+   "bearing_bias_deg": -0.01934366968782548,
+   "bearing_std_deg": 0.006765184783671571
+  },
+  {
+   "distance_m": 2.5,
+   "n_detected": 47,
+   "range_bias_m": -0.002097983067995591,
+   "range_std_m": 0.0038592149892439772,
+   "range_max_abs_m": 0.009290343935939305,
+   "bearing_bias_deg": -0.018346162869592068,
+   "bearing_std_deg": 0.009586569710906608
+  },
+  {
+   "distance_m": 3.0,
+   "n_detected": 50,
+   "range_bias_m": -0.0064953662336444664,
+   "range_std_m": 0.007205073076482675,
+   "range_max_abs_m": 0.01710613524962845,
+   "bearing_bias_deg": -0.01938969844736139,
+   "bearing_std_deg": 0.0104965648697204
+  },
+  {
+   "distance_m": 3.5,
+   "n_detected": 50,
+   "range_bias_m": 0.01297689792004471,
+   "range_std_m": 0.014309217429932793,
+   "range_max_abs_m": 0.03463487593821357,
+   "bearing_bias_deg": -0.019322368243467662,
+   "bearing_std_deg": 0.010730610852292185
+  },
+  {
+   "distance_m": 4.0,
+   "n_detected": 50,
+   "range_bias_m": -0.007496055216602296,
+   "range_std_m": 0.00899919930138917,
+   "range_max_abs_m": 0.022780799292043685,
+   "bearing_bias_deg": -0.019838885785938197,
+   "bearing_std_deg": 0.009270936086987423
+  },
+  {
+   "distance_m": 4.5,
+   "n_detected": 50,
+   "range_bias_m": -0.030986568978962074,
+   "range_std_m": 0.029196892019921105,
+   "range_max_abs_m": 0.06242230686735084,
+   "bearing_bias_deg": -0.01973628104570098,
+   "bearing_std_deg": 0.0032079156732077586
+  },
+  {
+   "distance_m": 5.0,
+   "n_detected": 50,
+   "range_bias_m": 0.017879982223813703,
+   "range_std_m": 0.02470717117047182,
+   "range_max_abs_m": 0.04992433207715319,
+   "bearing_bias_deg": -0.020426914761286843,
+   "bearing_std_deg": 0.006179727357856427
+  }
+ ],
+ "noise_final_noisy": [
+  {
+   "distance_m": 0.5,
+   "n_detected": 50,
+   "range_bias_m": -0.001152982352759494,
+   "range_std_m": 0.00010824701794642834,
+   "range_max_abs_m": 0.0013983986310169838,
+   "bearing_bias_deg": -0.0182949727429649,
+   "bearing_std_deg": 0.05016456495101922
+  },
+  {
+   "distance_m": 0.75,
+   "n_detected": 50,
+   "range_bias_m": -0.001419714890435113,
+   "range_std_m": 0.0003485593391754408,
+   "range_max_abs_m": 0.0020581689587878538,
+   "bearing_bias_deg": -0.013945622712600823,
+   "bearing_std_deg": 0.027859295221138784
+  },
+  {
+   "distance_m": 1.0,
+   "n_detected": 50,
+   "range_bias_m": -0.001334669462424194,
+   "range_std_m": 0.0006541022202298445,
+   "range_max_abs_m": 0.0024786316872740244,
+   "bearing_bias_deg": -0.017931386176255847,
+   "bearing_std_deg": 0.017550713190295702
+  },
+  {
+   "distance_m": 1.5,
+   "n_detected": 50,
+   "range_bias_m": -0.0017009305487933047,
+   "range_std_m": 0.0003863631497831202,
+   "range_max_abs_m": 0.002769707781759001,
+   "bearing_bias_deg": -0.02027606077286843,
+   "bearing_std_deg": 0.007688642887145396
+  },
+  {
+   "distance_m": 2.0,
+   "n_detected": 50,
+   "range_bias_m": -0.0020160358477749442,
+   "range_std_m": 0.002069196359179995,
+   "range_max_abs_m": 0.005211779469043609,
+   "bearing_bias_deg": -0.018575283195958567,
+   "bearing_std_deg": 0.0073183234413831694
+  },
+  {
+   "distance_m": 2.5,
+   "n_detected": 50,
+   "range_bias_m": -0.00231497468272603,
+   "range_std_m": 0.003845280639301824,
+   "range_max_abs_m": 0.01032246606870224,
+   "bearing_bias_deg": -0.019251640823173294,
+   "bearing_std_deg": 0.009679910243460509
+  },
+  {
+   "distance_m": 3.0,
+   "n_detected": 49,
+   "range_bias_m": -0.0067317042682878345,
+   "range_std_m": 0.007622583420710345,
+   "range_max_abs_m": 0.017813467912839,
+   "bearing_bias_deg": -0.018143854959486602,
+   "bearing_std_deg": 0.010710900487495649
+  },
+  {
+   "distance_m": 3.5,
+   "n_detected": 50,
+   "range_bias_m": 0.012569380211045571,
+   "range_std_m": 0.015184233619747706,
+   "range_max_abs_m": 0.0344778939940551,
+   "bearing_bias_deg": -0.01874320669027508,
+   "bearing_std_deg": 0.010833681194059058
+  },
+  {
+   "distance_m": 4.0,
+   "n_detected": 50,
+   "range_bias_m": -0.007124724022569859,
+   "range_std_m": 0.011160464489713447,
+   "range_max_abs_m": 0.02404483906531718,
+   "bearing_bias_deg": -0.019382969066438403,
+   "bearing_std_deg": 0.011217324023159787
+  },
+  {
+   "distance_m": 4.5,
+   "n_detected": 50,
+   "range_bias_m": -0.0318868168390722,
+   "range_std_m": 0.029668595194084015,
+   "range_max_abs_m": 0.06559350330935576,
+   "bearing_bias_deg": -0.020273080257932986,
+   "bearing_std_deg": 0.004221543816553936
+  },
+  {
+   "distance_m": 5.0,
+   "n_detected": 50,
+   "range_bias_m": 0.02019813985294361,
+   "range_std_m": 0.026777268074329244,
+   "range_max_abs_m": 0.06106042563910208,
+   "bearing_bias_deg": -0.020692797838619475,
+   "bearing_std_deg": 0.006270799158213413
+  }
+ ],
+ "frame_check": {
+  "full chain": {
+   "range_bias_m": 0.000445317776035592,
+   "n": 100
+  },
+  "translation forgotten": {
+   "range_bias_m": -0.09810389053851384,
+   "n": 100
+  }
+ },
+ "detection": [
+  {
+   "viewing_angle_deg": 0,
+   "distance_m": 0.15,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 0,
+   "distance_m": 0.2,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 0,
+   "distance_m": 0.3,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 0,
+   "distance_m": 0.5,
+   "detection_rate": 1.0
+  },
+  {
+   "viewing_angle_deg": 0,
+   "distance_m": 1.0,
+   "detection_rate": 1.0
+  },
+  {
+   "viewing_angle_deg": 0,
+   "distance_m": 2.0,
+   "detection_rate": 1.0
+  },
+  {
+   "viewing_angle_deg": 0,
+   "distance_m": 3.0,
+   "detection_rate": 1.0
+  },
+  {
+   "viewing_angle_deg": 0,
+   "distance_m": 4.0,
+   "detection_rate": 1.0
+  },
+  {
+   "viewing_angle_deg": 0,
+   "distance_m": 5.0,
+   "detection_rate": 1.0
+  },
+  {
+   "viewing_angle_deg": 0,
+   "distance_m": 6.0,
+   "detection_rate": 1.0
+  },
+  {
+   "viewing_angle_deg": 0,
+   "distance_m": 7.0,
+   "detection_rate": 0.95
+  },
+  {
+   "viewing_angle_deg": 0,
+   "distance_m": 8.0,
+   "detection_rate": 0.95
+  },
+  {
+   "viewing_angle_deg": 0,
+   "distance_m": 9.0,
+   "detection_rate": 1.0
+  },
+  {
+   "viewing_angle_deg": 15,
+   "distance_m": 0.15,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 15,
+   "distance_m": 0.2,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 15,
+   "distance_m": 0.3,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 15,
+   "distance_m": 0.5,
+   "detection_rate": 1.0
+  },
+  {
+   "viewing_angle_deg": 15,
+   "distance_m": 1.0,
+   "detection_rate": 1.0
+  },
+  {
+   "viewing_angle_deg": 15,
+   "distance_m": 2.0,
+   "detection_rate": 1.0
+  },
+  {
+   "viewing_angle_deg": 15,
+   "distance_m": 3.0,
+   "detection_rate": 1.0
+  },
+  {
+   "viewing_angle_deg": 15,
+   "distance_m": 4.0,
+   "detection_rate": 1.0
+  },
+  {
+   "viewing_angle_deg": 15,
+   "distance_m": 5.0,
+   "detection_rate": 1.0
+  },
+  {
+   "viewing_angle_deg": 15,
+   "distance_m": 6.0,
+   "detection_rate": 1.0
+  },
+  {
+   "viewing_angle_deg": 15,
+   "distance_m": 7.0,
+   "detection_rate": 0.85
+  },
+  {
+   "viewing_angle_deg": 15,
+   "distance_m": 8.0,
+   "detection_rate": 0.9
+  },
+  {
+   "viewing_angle_deg": 15,
+   "distance_m": 9.0,
+   "detection_rate": 1.0
+  },
+  {
+   "viewing_angle_deg": 30,
+   "distance_m": 0.15,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 30,
+   "distance_m": 0.2,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 30,
+   "distance_m": 0.3,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 30,
+   "distance_m": 0.5,
+   "detection_rate": 1.0
+  },
+  {
+   "viewing_angle_deg": 30,
+   "distance_m": 1.0,
+   "detection_rate": 1.0
+  },
+  {
+   "viewing_angle_deg": 30,
+   "distance_m": 2.0,
+   "detection_rate": 1.0
+  },
+  {
+   "viewing_angle_deg": 30,
+   "distance_m": 3.0,
+   "detection_rate": 1.0
+  },
+  {
+   "viewing_angle_deg": 30,
+   "distance_m": 4.0,
+   "detection_rate": 1.0
+  },
+  {
+   "viewing_angle_deg": 30,
+   "distance_m": 5.0,
+   "detection_rate": 0.9
+  },
+  {
+   "viewing_angle_deg": 30,
+   "distance_m": 6.0,
+   "detection_rate": 1.0
+  },
+  {
+   "viewing_angle_deg": 30,
+   "distance_m": 7.0,
+   "detection_rate": 1.0
+  },
+  {
+   "viewing_angle_deg": 30,
+   "distance_m": 8.0,
+   "detection_rate": 0.95
+  },
+  {
+   "viewing_angle_deg": 30,
+   "distance_m": 9.0,
+   "detection_rate": 0.4
+  },
+  {
+   "viewing_angle_deg": 45,
+   "distance_m": 0.15,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 45,
+   "distance_m": 0.2,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 45,
+   "distance_m": 0.3,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 45,
+   "distance_m": 0.5,
+   "detection_rate": 1.0
+  },
+  {
+   "viewing_angle_deg": 45,
+   "distance_m": 1.0,
+   "detection_rate": 1.0
+  },
+  {
+   "viewing_angle_deg": 45,
+   "distance_m": 2.0,
+   "detection_rate": 1.0
+  },
+  {
+   "viewing_angle_deg": 45,
+   "distance_m": 3.0,
+   "detection_rate": 1.0
+  },
+  {
+   "viewing_angle_deg": 45,
+   "distance_m": 4.0,
+   "detection_rate": 1.0
+  },
+  {
+   "viewing_angle_deg": 45,
+   "distance_m": 5.0,
+   "detection_rate": 1.0
+  },
+  {
+   "viewing_angle_deg": 45,
+   "distance_m": 6.0,
+   "detection_rate": 0.7
+  },
+  {
+   "viewing_angle_deg": 45,
+   "distance_m": 7.0,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 45,
+   "distance_m": 8.0,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 45,
+   "distance_m": 9.0,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 60,
+   "distance_m": 0.15,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 60,
+   "distance_m": 0.2,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 60,
+   "distance_m": 0.3,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 60,
+   "distance_m": 0.5,
+   "detection_rate": 1.0
+  },
+  {
+   "viewing_angle_deg": 60,
+   "distance_m": 1.0,
+   "detection_rate": 1.0
+  },
+  {
+   "viewing_angle_deg": 60,
+   "distance_m": 2.0,
+   "detection_rate": 1.0
+  },
+  {
+   "viewing_angle_deg": 60,
+   "distance_m": 3.0,
+   "detection_rate": 0.95
+  },
+  {
+   "viewing_angle_deg": 60,
+   "distance_m": 4.0,
+   "detection_rate": 0.65
+  },
+  {
+   "viewing_angle_deg": 60,
+   "distance_m": 5.0,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 60,
+   "distance_m": 6.0,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 60,
+   "distance_m": 7.0,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 60,
+   "distance_m": 8.0,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 60,
+   "distance_m": 9.0,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 70,
+   "distance_m": 0.15,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 70,
+   "distance_m": 0.2,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 70,
+   "distance_m": 0.3,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 70,
+   "distance_m": 0.5,
+   "detection_rate": 1.0
+  },
+  {
+   "viewing_angle_deg": 70,
+   "distance_m": 1.0,
+   "detection_rate": 0.95
+  },
+  {
+   "viewing_angle_deg": 70,
+   "distance_m": 2.0,
+   "detection_rate": 1.0
+  },
+  {
+   "viewing_angle_deg": 70,
+   "distance_m": 3.0,
+   "detection_rate": 0.05
+  },
+  {
+   "viewing_angle_deg": 70,
+   "distance_m": 4.0,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 70,
+   "distance_m": 5.0,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 70,
+   "distance_m": 6.0,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 70,
+   "distance_m": 7.0,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 70,
+   "distance_m": 8.0,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 70,
+   "distance_m": 9.0,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 75,
+   "distance_m": 0.15,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 75,
+   "distance_m": 0.2,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 75,
+   "distance_m": 0.3,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 75,
+   "distance_m": 0.5,
+   "detection_rate": 1.0
+  },
+  {
+   "viewing_angle_deg": 75,
+   "distance_m": 1.0,
+   "detection_rate": 0.55
+  },
+  {
+   "viewing_angle_deg": 75,
+   "distance_m": 2.0,
+   "detection_rate": 0.45
+  },
+  {
+   "viewing_angle_deg": 75,
+   "distance_m": 3.0,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 75,
+   "distance_m": 4.0,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 75,
+   "distance_m": 5.0,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 75,
+   "distance_m": 6.0,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 75,
+   "distance_m": 7.0,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 75,
+   "distance_m": 8.0,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 75,
+   "distance_m": 9.0,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 80,
+   "distance_m": 0.15,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 80,
+   "distance_m": 0.2,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 80,
+   "distance_m": 0.3,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 80,
+   "distance_m": 0.5,
+   "detection_rate": 1.0
+  },
+  {
+   "viewing_angle_deg": 80,
+   "distance_m": 1.0,
+   "detection_rate": 0.55
+  },
+  {
+   "viewing_angle_deg": 80,
+   "distance_m": 2.0,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 80,
+   "distance_m": 3.0,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 80,
+   "distance_m": 4.0,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 80,
+   "distance_m": 5.0,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 80,
+   "distance_m": 6.0,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 80,
+   "distance_m": 7.0,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 80,
+   "distance_m": 8.0,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 80,
+   "distance_m": 9.0,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 85,
+   "distance_m": 0.15,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 85,
+   "distance_m": 0.2,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 85,
+   "distance_m": 0.3,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 85,
+   "distance_m": 0.5,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 85,
+   "distance_m": 1.0,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 85,
+   "distance_m": 2.0,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 85,
+   "distance_m": 3.0,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 85,
+   "distance_m": 4.0,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 85,
+   "distance_m": 5.0,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 85,
+   "distance_m": 6.0,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 85,
+   "distance_m": 7.0,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 85,
+   "distance_m": 8.0,
+   "detection_rate": 0.0
+  },
+  {
+   "viewing_angle_deg": 85,
+   "distance_m": 9.0,
+   "detection_rate": 0.0
+  }
+ ],
+ "run": {
+  "steps": 267,
+  "docked": true,
+  "seen_fraction": 0.704119850187266,
+  "longest_loss_steps": 57,
+  "range_bias_original_m": 0.036804769441614614,
+  "range_bias_final_m": 0.010612820117607131,
+  "range_std_original_m": 0.06761405255660491,
+  "range_std_final_m": 0.025372745289797546,
+  "range_max_abs_original_m": 0.6979345331793358,
+  "range_max_abs_final_m": 0.1091984126004526,
+  "bearing_std_final_deg": 0.0139430025998972,
+  "true_range_span_m": [
+   0.7060727895887132,
+   5.476642705577183
+  ],
+  "final_true_range_m": 0.7061215388931977,
+  "last_seen_step": 266,
+  "sigma_yaw_end_deg": 9.55947319188656
+ },
+ "Rn_start": {
+  "sigma_range_m": 0.02750287538403267,
+  "sigma_bearing_deg": 0.01722380854443399
+ }
+}
