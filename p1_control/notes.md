@@ -14,6 +14,12 @@ The LQR weights were selected as Q = diag(25, 14.59) and R = 1. These prioritise
 
 Angular velocity is limited to ±1 rad/s. When heading error exceeds 45 degrees, the robot stops moving forward and rotates towards the reference path before continuing.
 
-The controller will be evaluated using tracking error and control effort plots, along with tests using different LQR weights to compare accuracy and steering effort.
+We tested five different LQR weight combinations across three trials each. The original weights achieved the lowest average lateral tracking error of 2.9 cm. Increasing R reduced steering effort but increased tracking error to 4.5 cm, showing the trade-off between accuracy and control effort. All 15 trials sucessfully completed docking.
+
+The tracking error graph shows that the robot generally maintained small lateral and heading errors while following the reference path. Larger errors occurred during some path corrections, particularly when the robot needed to change direction to avoid obstacles.
 
 The control effort graph shows that the robot maintained a forward velocity of approximately 0.2 m/s during most of the navigation. Angular velocity varied as the robot corrected its heading and followed the selected path. Several corrections reached the imposed limit of +/- 1 rad/s, showing that steering saturation can restrict how quickly the robot responds to large errors.
+
+Limitations 
+
+The controller performed good in normal conditions, but would be less reliable in more challenging environments. In dense obstacle layouts, the robot became trapped and rotated without finding a clear path. This shows that while the LQR controller can correct tracking errors, its performance also depends on the obstacle avoidance system generating suitable waypoints.
