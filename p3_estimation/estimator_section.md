@@ -96,23 +96,23 @@ All runs use 10 seeds per condition.
 | Condition | Success | Final error (cm) | Inside ±2σ x/y/θ (%) |
 |---|---|---|---|
 | nominal | 10/10 | 4.5 ± 0.3 | 100/100/100 |
-| no camera update | 0/10 | 47.3 ± 8.8 | 100/100/100 |
+| no camera update | 0/10 | 47.4 ± 8.8 | 100/100/100 |
 | no start error | 10/10 | 0.2 ± 0.2 | 100/100/100 |
-| large start error | 10/10 | 10.1 ± 0.6 | 61/26/35 |
-| R 10x smaller | 10/10 | 3.7 ± 1.0 | 100/98/99 |
+| large start error | 10/10 | 10.1 ± 0.5 | 62/25/36 |
+| R 10x smaller | 10/10 | 4.2 ± 0.9 | 100/98/100 |
 | R 10x larger | 10/10 | 4.6 ± 0.2 | 100/100/100 |
-| Q 10x smaller | 10/10 | 4.4 ± 0.3 | 100/100/100 |
+| Q 10x smaller | 10/10 | 4.4 ± 0.4 | 100/100/100 |
 | 8 s marker blackout | 10/10 | 4.5 ± 0.5 | 100/100/100 |
-| mid-run push | 10/10 | 4.6 ± 0.4 | 99/100/100 |
-| large push | 8/10 | 8.5 ± 1.1 | 92/89/92 |
-| slip 0.05 | 10/10 | 4.7 ± 0.8 | 100/100/100 |
-| slip 0.10 | 10/10 | 4.7 ± 1.2 | 100/100/100 |
-| encoder noise | 10/10 | 4.3 ± 2.3 | 100/100/99 |
+| mid-run push | 10/10 | 4.5 ± 0.4 | 99/100/100 |
+| large push | 7/10 | 9.2 ± 2.2 | 91/89/88 |
+| slip 0.05 | 10/10 | 4.8 ± 0.8 | 100/100/100 |
+| slip 0.10 | 10/10 | 4.5 ± 1.2 | 100/100/99 |
+| encoder noise | 10/10 | 4.1 ± 2.4 | 100/100/99 |
 
 - **Camera:** without camera updates the robot never docks correctly, and it ends 32–58° off the marker.
 - **Start error:** it causes nearly all of the final error. A large start error still docks, but it is outside the 95% region of P₀ (NEES 9.6), so the ±2σ coverage drops.
 - **Tuning:** with R 10x smaller (variance, so std ÷ 3.16), mean NEES rises from 2.01 to 3.98 over 30 seeds. With Q 10x smaller it rises to 5.30. Accuracy barely changes, so these failures only show up in the consistency measures.
-- **Large push failures:** both runs collide with the estimate 22–24 cm off. With the true pose given to the controller, neither collides, so the estimate is the cause even though the trial table labels them "controller". The final error is about double nominal, which fits the swing part of the push not being correctable.
+- **Large push failures:** two of the three runs (seeds 2 and 5) collide with the estimate 22–24 cm off. With the true pose given to the controller, neither collides, so the estimate is the cause even though the trial table labels them "controller". Seed 1 fails only on the computer that produced the committed results, so it has not been re-tested this way. The final error is about double nominal, which fits the swing part of the push not being correctable.
 - **Earlier tuning failure:** with Rn at 2 cm, bad range readings of 10–66 cm made the estimate jump, by up to about 1.5 m in one step, and most collisions followed. Of the 13 collision runs re-tested, 12 no longer collided with the true pose. An outlier-rejection gate was tested and rejected, because it also discards the correct readings after a push (mid-run push fell from 10/10 to 2/10).
 
 ### Limitations
@@ -122,3 +122,4 @@ All runs use 10 seeds per condition.
 - A single Gaussian Rn is a compromise, because most readings are far better than 6 cm and a few are far worse.
 - Rn was chosen on the same conditions used to test it, so there is no separate test set.
 - The filter can't detect when a push has left `P` too small.
+- Results can differ slightly between computers. The committed trials give 169/190. The same code gave 173/190 on a second computer, where `start_B` seeds 0 and 2, `obstacles_dense` seed 2 and `push_large` seed 1 succeed. Repeating the run on that second computer reproduced all 190 final errors exactly, so each computer is repeatable and the difference comes from the machine, most likely small rendering or numerical differences changing the camera readings. We did not isolate the exact cause.
