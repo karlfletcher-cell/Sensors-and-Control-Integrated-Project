@@ -27,6 +27,12 @@ if "--push" in args:
 if "--blackout" in args:
     kw.update(blackout=(250, 310))
 
+
+
+
+
+    
+
 log = run_episode(**kw)
 tag = "deadreck" if "--no-ekf" in args else "push" if "--push" in args else "blackout" if "--blackout" in args else "nominal"
 fn = f"run_log_{tag}.npz" if tag != "nominal" else "run_log.npz"
