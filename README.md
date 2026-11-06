@@ -49,3 +49,12 @@ x_true = sim.true_pose()              # GROUND TRUTH — plots/evaluation only
 - Marker: ArUco `DICT_4X4_50`, id 0, 0.20 m, at (2.6, 1.5) facing −x.
 - Robot: Waffle — wheel radius 0.033 m, separation 0.287 m.
 - Don't hand-edit `tb3_scene.xml`; change `make_scene.py` and re-run it.
+
+## AI declaration
+
+| Person | Name | AI tools used | What they were used for |
+|---|---|---|---|
+| **P1** | | | |
+| **P2** | | | |
+| **P3** | Karl Fletcher |Claude |  To explain code that I did not understand how to do, to explain how different ideas worked exactly (EKF) |
+| **P4** | | | |
