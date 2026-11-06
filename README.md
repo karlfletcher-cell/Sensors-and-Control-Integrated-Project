@@ -52,9 +52,6 @@ x_true = sim.true_pose()              # GROUND TRUTH — plots/evaluation only
 
 ## AI declaration
 
-| Person | Name | AI tools used | What they were used for |
-|---|---|---|---|
-| **P1** | | | |
-| **P2** | | | |
-| **P3** | Karl Fletcher |Claude |  To explain code that I did not understand how to do, to explain how different ideas worked exactly (EKF) |
-| **P4** | | | |
+All group members used Claude to create the project template: the P1, P2, P3 and P4 folder structure, with basic starter files in each to keep us on track. We also used it to clarify and explain topics we did not fully understand, such as how the EKF works.
+
+## Youtube Link
